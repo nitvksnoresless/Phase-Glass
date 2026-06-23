@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PHASE GLASS | Industrial Design Studio</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&family=JetBrains+Mono:wght@400&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=JetBrains+Mono:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-container": "#636466",
+                    "secondary": "#c7c6cb",
+                    "on-tertiary-fixed-variant": "#474649",
+                    "on-primary-fixed-variant": "#454749",
+                    "primary-fixed-dim": "#c6c6c8",
+                    "error-container": "#93000a",
+                    "on-error": "#690005",
+                    "surface-container-low": "#1b1b1b",
+                    "primary-container": "#e2e2e4",
+                    "glass-glow": "rgba(255, 255, 255, 0.25)",
+                    "secondary-fixed": "#e3e2e7",
+                    "on-secondary-container": "#b5b4ba",
+                    "surface-container-lowest": "#0e0e0e",
+                    "on-tertiary-container": "#656466",
+                    "surface-container-highest": "#353535",
+                    "surface-tint": "#c6c6c8",
+                    "on-tertiary": "#303032",
+                    "on-surface": "#e2e2e2",
+                    "inverse-primary": "#5d5e60",
+                    "background": "#131313",
+                    "surface-card": "#0c0c0e",
+                    "outline": "#8f9194",
+                    "on-error-container": "#ffdad6",
+                    "surface-dim": "#131313",
+                    "primary-fixed": "#e2e2e4",
+                    "outline-variant": "#44474a",
+                    "on-primary": "#2f3132",
+                    "primary": "#ffffff",
+                    "surface-container-high": "#2a2a2a",
+                    "tertiary-fixed": "#e4e2e4",
+                    "tertiary-fixed-dim": "#c8c6c8",
+                    "on-secondary": "#2f3034",
+                    "glass-border": "rgba(255, 255, 255, 0.10)",
+                    "surface-variant": "#353535",
+                    "on-surface-variant": "#c5c7c9",
+                    "inverse-on-surface": "#303030",
+                    "on-primary-fixed": "#1a1c1d",
+                    "surface": "#131313",
+                    "surface-bright": "#393939",
+                    "inverse-surface": "#e2e2e2",
+                    "surface-container": "#1f1f1f",
+                    "tertiary-container": "#e4e2e4",
+                    "error": "#ffb4ab",
+                    "tertiary": "#ffffff",
+                    "on-tertiary-fixed": "#1b1b1d",
+                    "on-secondary-fixed-variant": "#46464b",
+                    "secondary-container": "#46464b",
+                    "on-background": "#e2e2e2",
+                    "on-secondary-fixed": "#1a1b1f",
+                    "secondary-fixed-dim": "#c7c6cb"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "card-padding": "1.75rem",
+                    "grid-gutter": "1.25rem",
+                    "stack-sm": "0.5rem",
+                    "stack-md": "1rem",
+                    "container-max": "1152px",
+                    "section-gap-mobile": "6rem",
+                    "section-gap-desktop": "8rem"
+            },
+            "fontFamily": {
+                    "body-lg": ["Inter"],
+                    "label-mono": ["Inter"],
+                    "headline-h1": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "headline-h2": ["Inter"],
+                    "display-hero-mobile": ["Inter"],
+                    "headline-h3": ["Inter"],
+                    "label-caps": ["Inter"],
+                    "display-hero": ["Inter"]
+            },
+            "fontSize": {
+                    "body-lg": ["18px", {"lineHeight": "1.6", "letterSpacing": "-0.01em", "fontWeight": "400"}],
+                    "label-mono": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "400"}],
+                    "headline-h1": ["60px", {"lineHeight": "1.1", "letterSpacing": "-0.03em", "fontWeight": "600"}],
+                    "body-sm": ["14px", {"lineHeight": "1.6", "letterSpacing": "0em", "fontWeight": "400"}],
+                    "headline-h2": ["36px", {"lineHeight": "1.2", "letterSpacing": "-0.025em", "fontWeight": "600"}],
+                    "display-hero-mobile": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.03em", "fontWeight": "600"}],
+                    "headline-h3": ["20px", {"lineHeight": "1.4", "letterSpacing": "-0.015em", "fontWeight": "600"}],
+                    "label-caps": ["11px", {"lineHeight": "1", "letterSpacing": "0.24em", "fontWeight": "400"}],
+                    "display-hero": ["88px", {"lineHeight": "0.98", "letterSpacing": "-0.035em", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+    
+<style>html {
+    scroll-behavior: smooth
+    }
+body {
+    background-color: #000;
+    overflow-x: hidden
+    }
+.grain-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.04;
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuDUWoF8qd6kAbNS97dG7ZciH4cGq4FwS1GzcEN4C1Tvmm9aHpzhJnH8PXxzlopUIPo90D95spxtBoA4hE9Wg9ozknyP6vs_DhKk1hrbK_cDBBUQkly-QutfuXs6IfRyS-rnmg6wcTncwFznljVA8Ai38PTew3n33jTFQdl1eylHkljQpWonMpN1NW-c4o80ZQBEJBJyosTLKVuFmGFyyjs09I5B0BCTgpxhfJtNDXx_Q99eNEzbKE1tlLGTds7Yog98Gh4X1XV1OwU);
+    filter: contrast(150%) brightness(100%);
+    mix-blend-mode: overlay
+    }
+.hero-entrance {
+    opacity: 0;
+    transform: translatey(30px);
+    animation: slideUpFade 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards
+    }
+.hero-entrance-delay-1 {
+    animation-delay: 0.2s
+    }
+.hero-entrance-delay-2 {
+    animation-delay: 0.4s
+    }
+.hero-entrance-delay-3 {
+    animation-delay: 0.6s
+    }
+@keyframes slideUpFade {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+        }
+    }
+.tilt-card {
+    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.4s ease;
+    transform-style: preserve-3d;
+    perspective: 1000px
+    }
+.tilt-card:hover {
+    transform: translatey(-8px) rotatex(2deg) rotatey(-2deg);
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 30px 60px -15px rgba(255, 255, 255, 0.15)
+    }
+.material-symbols-outlined {
+    font-variation-settings: "FILL" 0, "wght" 300, "GRAD" 0, "opsz" 24
+    }</style>
+</head>
+<body class="font-body-lg text-on-surface">
+<div class="grain-overlay"></div>
+<header class="fixed top-0 w-full z-50 bg-background/70 backdrop-blur-xl border-b border-glass-border">
+<nav class="max-w-container-max mx-auto px-8 py-6 flex justify-between items-center">
+<div>
+    <div class="font-body-lg text-xl tracking-[0.2em] text-primary uppercase font-light">
+        Phase <span class="opacity-40 font-thin">//</span> Glass
+    </div>
+</div>
+<div class="hidden md:flex gap-8 items-center" id="nav-menu">
+<a class="nav-link font-label-caps text-label-caps tracking-[0.24em] text-on-surface-variant hover:text-primary transition-colors duration-300" href="#story">Story</a>
+<a class="nav-link font-label-caps text-label-caps tracking-[0.24em] text-on-surface-variant hover:text-primary transition-colors duration-300" href="#work">Work</a>
+<a class="nav-link font-label-caps text-label-caps tracking-[0.24em] text-on-surface-variant hover:text-primary transition-colors duration-300" href="#process">Process</a>
+</div>
+<a href="mailto:knithilanv@gmail.com" class="bg-primary text-on-primary font-label-caps text-label-caps px-6 py-2 rounded-full uppercase tracking-[0.2em] hover:opacity-80 transition-opacity flex items-center justify-center">Connect</a>
+</nav>
+</header>
+<main>
+<section class="relative h-screen w-full flex items-center justify-center overflow-hidden">
+<div class="absolute inset-0 w-full h-full opacity-60 z-0">
+<canvas id="shader-canvas-ANIMATION_3" class="w-full h-full block"></canvas>
+<script>
+(function() {
+  const canvas = document.getElementById('shader-canvas-ANIMATION_3');
+
+  function syncSize() {
+    const w = canvas.clientWidth  || 1280;
+    const h = canvas.clientHeight || 720;
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width  = w;
+      canvas.height = h;
+    }
+  }
+  if (typeof ResizeObserver !== 'undefined') {
+    new ResizeObserver(syncSize).observe(canvas);
+  }
+  syncSize();
+
+  const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+  if (!gl) return;
+
+  const vs = `attribute vec2 a_position;
+varying vec2 v_texCoord;
+void main() {
+  v_texCoord = a_position * 0.5 + 0.5;
+  gl_Position = vec4(a_position, 0.0, 1.0);
+}`;
+
+  const fs = `precision highp float;
+varying vec2 v_texCoord;
+uniform float u_time;
+uniform vec2 u_resolution;
+uniform vec2 u_mouse;
+
+float hash(vec2 p) {
+    p = fract(p * vec2(123.34, 456.21));
+    p += dot(p, p + 45.32);
+    return fract(p.x * p.y);
+}
+
+float noise(vec2 p) {
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    float a = hash(i);
+    float b = hash(i + vec2(1.0, 0.0));
+    float c = hash(i + vec2(0.0, 1.0));
+    float d = hash(i + vec2(1.0, 1.0));
+    vec2 u = f * f * (3.0 - 2.0 * f);
+    return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
+}
+
+float fbm(vec2 p) {
+    float v = 0.0;
+    float a = 0.5;
+    mat2 rot = mat2(cos(0.5), sin(0.5), -sin(0.5), cos(0.5));
+    for (int i = 0; i < 5; i++) {
+        v += a * noise(p);
+        p = rot * p * 2.0 + vec2(10.0);
+        a *= 0.5;
+    }
+    return v;
+}
+
+void main() {
+    vec2 uv = v_texCoord;
+    vec2 p = uv * 2.0 - 1.0;
+    p.x *= u_resolution.x / u_resolution.y;
+
+    float time = u_time * 0.2;
+    vec2 m = (u_mouse / u_resolution) * 2.0 - 1.0;
+    m.x *= u_resolution.x / u_resolution.y;
+    
+    vec2 q = vec2(fbm(p + vec2(0.0)), fbm(p + vec2(5.2, 1.3)));
+    vec2 r = vec2(fbm(p + 4.0 * q + vec2(1.7, 9.2) + 0.15 * time), fbm(p + 4.0 * q + vec2(8.3, 2.8) + 0.126 * time));
+    float f = fbm(p + 4.0 * r);
+
+    vec3 baseColor = vec3(0.02, 0.02, 0.03); 
+    vec3 accentColor = vec3(0.3, 0.3, 0.35); 
+    
+    vec3 color = mix(baseColor, accentColor, clamp(f * f * 4.0, 0.0, 1.0));
+    color = mix(color, vec3(0.1, 0.1, 0.15), clamp(length(q), 0.0, 1.0) * 0.3);
+    color = mix(color, vec3(0.5, 0.5, 0.6), clamp(length(r.x), 0.0, 1.0) * 0.1);
+    
+    float mouseDist = length(p - m);
+    float glow = exp(-mouseDist * 3.5) * 0.25;
+    color += glow * vec3(0.8, 0.8, 1.0);
+
+    color = pow(color, vec3(1.2)); 
+    
+    gl_FragColor = vec4(color, 1.0);
+}`;
+
+  function cs(type, src) {
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    return s;
+  }
+  const prog = gl.createProgram();
+  gl.attachShader(prog, cs(gl.VERTEX_SHADER, vs));
+  gl.attachShader(prog, cs(gl.FRAGMENT_SHADER, fs));
+  gl.linkProgram(prog);
+  gl.useProgram(prog);
+  
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+  const pos = gl.getAttribLocation(prog, 'a_position');
+  gl.enableVertexAttribArray(pos);
+  gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
+  
+  const uTime = gl.getUniformLocation(prog, 'u_time');
+  const uRes = gl.getUniformLocation(prog, 'u_resolution');
+  const uMouse = gl.getUniformLocation(prog, 'u_mouse');
+
+  let mouse = { x: canvas.width / 2, y: canvas.height / 2 };
+  let targetMouse = { x: canvas.width / 2, y: canvas.height / 2 };
+
+  window.addEventListener('mousemove', (event) => {
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width && rect.height) {
+      targetMouse.x = ((event.clientX - rect.left) / rect.width) * canvas.width;
+      targetMouse.y = (1.0 - (event.clientY - rect.top) / rect.height) * canvas.height;
+    }
+  });
+
+  function render(t) {
+    if (typeof ResizeObserver === 'undefined') syncSize();
+    gl.viewport(0, 0, canvas.width, canvas.height);
+
+    // Smooth mouse follow mapping
+    mouse.x += (targetMouse.x - mouse.x) * 0.1;
+    mouse.y += (targetMouse.y - mouse.y) * 0.1;
+
+    if (uTime) gl.uniform1f(uTime, t * 0.001);
+    if (uRes) gl.uniform2f(uRes, canvas.width, canvas.height);
+    if (uMouse) gl.uniform2f(uMouse, mouse.x, mouse.y);
+
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    requestAnimationFrame(render);
+  }
+  render(0);
+})();
+</script>
+</div>
+<div class="relative z-10 max-w-4xl px-8 text-center pt-16">
+<span class="hero-entrance font-body-lg text-[11px] font-medium text-outline uppercase tracking-[0.24em] px-4 py-1.5 border border-outline-variant/30 rounded-full mb-6 inline-block">Upcoming Release</span>
+<h1 class="hero-entrance font-display-hero text-display-hero-mobile md:text-display-hero text-primary mb-6">
+                    The Future. <span class="font-light opacity-60">Is Forged.</span>
+</h1>
+<p class="hero-entrance hero-entrance-delay-1 font-body-lg text-secondary mb-10 max-w-2xl mx-auto">
+                    Industrial design explorations in medical tech, work peripherals, and functional accessories. A passion project by a high school designer.
+                </p>
+
+<div class="hero-entrance hero-entrance-delay-2 flex flex-col items-center mb-12">
+    <p class="font-label-caps text-[10px] tracking-[0.2em] text-on-surface-variant uppercase mb-4 opacity-70">First Concept Reveal In:</p>
+    <div class="flex justify-center gap-4 md:gap-8">
+        <div class="flex flex-col items-center bg-surface-card/60 border border-glass-border p-4 md:p-6 rounded-xl min-w-[80px] md:min-w-[120px] backdrop-blur-md">
+            <span id="days" class="font-headline-h2 text-headline-h2 text-primary">00</span>
+            <span class="font-label-caps text-label-caps text-on-surface-variant mt-2">Days</span>
+        </div>
+        <div class="flex flex-col items-center bg-surface-card/60 border border-glass-border p-4 md:p-6 rounded-xl min-w-[80px] md:min-w-[120px] backdrop-blur-md">
+            <span id="hours" class="font-headline-h2 text-headline-h2 text-primary">00</span>
+            <span class="font-label-caps text-label-caps text-on-surface-variant mt-2">Hours</span>
+        </div>
+        <div class="flex flex-col items-center bg-surface-card/60 border border-glass-border p-4 md:p-6 rounded-xl min-w-[80px] md:min-w-[120px] backdrop-blur-md">
+            <span id="mins" class="font-headline-h2 text-headline-h2 text-primary">00</span>
+            <span class="font-label-caps text-label-caps text-on-surface-variant mt-2">Mins</span>
+        </div>
+        <div class="flex flex-col items-center bg-surface-card/60 border border-glass-border p-4 md:p-6 rounded-xl min-w-[80px] md:min-w-[120px] backdrop-blur-md">
+            <span id="secs" class="font-headline-h2 text-headline-h2 text-primary">00</span>
+            <span class="font-label-caps text-label-caps text-on-surface-variant mt-2">Secs</span>
+        </div>
+    </div>
+</div>
+
+<div class="hero-entrance hero-entrance-delay-3 flex flex-col md:flex-row gap-4 justify-center">
+<a class="bg-primary text-black font-label-caps text-label-caps px-10 py-5 rounded-full uppercase tracking-[0.2em] transition-all hover:scale-105 active:opacity-80" href="#story">
+                        Explore Concepts
+                    </a>
+<a target="_blank" class="border border-outline-variant/30 text-secondary font-label-caps text-label-caps px-10 py-5 rounded-full uppercase tracking-[0.2em] backdrop-blur-md transition-all duration-500 ease-out hover:bg-white hover:text-black hover:border-transparent" href="https://www.instagram.com/phase_glass/">
+                        Follow the Process
+                    </a>
+</div>
+</div>
+<div class="absolute bottom-12 left-1/2 -translate-x-1/2 animate-bounce opacity-40">
+<span class="material-symbols-outlined text-primary">keyboard_double_arrow_down</span>
+</div>
+</section>
+
+<section class="py-section-gap-mobile md:py-section-gap-desktop bg-surface-container-lowest px-8" id="story">
+<div class="max-w-container-max mx-auto grid md:grid-cols-2 gap-16 items-center">
+<div class="order-2 md:order-1">
+<div class="h-[600px] w-full rounded-xl overflow-hidden border border-glass-border relative">
+<div class="absolute inset-0 bg-gradient-to-tr from-surface-container-lowest via-transparent to-transparent z-10"></div>
+<img class="w-full h-full object-cover grayscale opacity-80" alt="Close up of granular beach sand" src="sand.png"/>
+</div>
+</div>
+<div class="order-1 md:order-2 space-y-8">
+<span class="text-[11px] font-medium text-primary uppercase tracking-[0.24em] px-4 py-1.5 border border-primary/40 bg-primary/10 rounded-full">Origin Story</span>
+<h2 class="font-headline-h1 text-headline-h1 text-primary">Where Sand is Forged.</h2>
+<p class="font-body-lg text-on-surface leading-relaxed">
+                        I spent countless hours learning CAD and 3D design, but I didn't have a real application for it. The turning point came on a trip to the beach. Laying there, feeling the sand slip through my fingers, I realized something: an individual grain is useless by itself. But when you gather multiple, you sink into them.
+                    </p>
+<p class="font-body-lg text-on-surface leading-relaxed">
+                        That sand represents the obstacles of our everyday lives. For overworked doctors fighting against frustrating, poorly made tools, their daily gear just pulls them down. My goal is to take that raw, heavy sand and forge it under pressure into clear, functional glass. Hence. Phase Glass.
+                    </p>
+<div class="grid grid-cols-2 gap-8 pt-4">
+<div>
+<div class="text-headline-h2 text-primary font-bold">2.4k+</div>
+<div class="font-label-caps text-label-caps text-on-surface-variant pt-2">CAD Hours</div>
+</div>
+<div>
+<div class="text-headline-h2 text-primary font-bold">01</div>
+<div class="font-label-caps text-label-caps text-on-surface-variant pt-2">Upcoming Launch</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section class="py-section-gap-mobile md:py-section-gap-desktop bg-background px-8" id="work">
+<div class="max-w-container-max mx-auto">
+<div class="mb-16 flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div class="max-w-xl">
+<h2 class="font-headline-h2 text-headline-h2 text-primary mb-4">Core Focus Areas</h2>
+<p class="text-on-surface-variant">Where technical complexity meets minimalist ergonomics. <span class="text-error font-semibold">(Note: These categories are currently <span class="underline">conceptual work in progress ideas</span> that I plan to <span class="underline">expand on</span>.)</span></p>
+</div>
+<div class="font-label-mono text-label-mono text-outline">/PROJECT_INDEX_2026</div>
+</div>
+<div class="grid md:grid-cols-3 gap-grid-gutter">
+<a href="#" class="group tilt-card bg-surface-card border border-glass-border p-card-padding rounded-xl flex flex-col h-full relative overflow-hidden transition-all duration-300 block cursor-pointer">
+<div class="flex justify-between items-start mb-10 relative z-10">
+<div class="w-12 h-12 rounded-lg border border-outline-variant flex items-center justify-center text-primary transition-colors group-hover:bg-primary group-hover:text-black">
+<span class="material-symbols-outlined">vital_signs</span>
+</div>
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-outline-variant/30 text-[11px] font-medium text-on-surface-variant bg-surface-container/40">
+<span class="w-1.5 h-1.5 rounded-full bg-outline animate-pulse"></span>In Development
+</span>
+</div>
+<h3 class="font-headline-h3 text-headline-h3 text-primary mb-4 relative z-10">Medical Devices</h3>
+<p class="text-body-sm text-on-surface-variant flex-grow relative z-10 mb-6">
+                            Humanizing healthcare through empathetic industrial design. Focusing on intuitive interfaces and post surgical recovery tools.
+                        </p>
+<div class="relative z-10 flex items-center gap-2 text-primary font-label-caps text-[11px] tracking-[0.2em] uppercase opacity-50 group-hover:opacity-100 transition-opacity">
+    Explore Concept <span class="material-symbols-outlined text-[14px] transform group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</div>
+</a>
+
+<a href="#" class="group tilt-card bg-surface-card border border-glass-border p-card-padding rounded-xl flex flex-col h-full relative overflow-hidden transition-all duration-300 block cursor-pointer">
+<div class="flex justify-between items-start mb-10 relative z-10">
+<div class="w-12 h-12 rounded-lg border border-outline-variant flex items-center justify-center text-primary transition-colors group-hover:bg-primary group-hover:text-black">
+<span class="material-symbols-outlined">keyboard</span>
+</div>
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-outline-variant/30 text-[11px] font-medium text-on-surface-variant bg-surface-container/40">
+<span class="w-1.5 h-1.5 rounded-full bg-outline animate-pulse"></span>In Development
+</span>
+</div>
+<h3 class="font-headline-h3 text-headline-h3 text-primary mb-4 relative z-10">Work Peripherals</h3>
+<p class="text-body-sm text-on-surface-variant flex-grow relative z-10 mb-6">
+                            Machined aluminum and tactile interfaces. Redefining the tools of creation for a more focused professional workflow.
+                        </p>
+<div class="relative z-10 flex items-center gap-2 text-primary font-label-caps text-[11px] tracking-[0.2em] uppercase opacity-50 group-hover:opacity-100 transition-opacity">
+    Explore Concept <span class="material-symbols-outlined text-[14px] transform group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</div>
+</a>
+
+<a href="#" class="group tilt-card bg-surface-card border border-glass-border p-card-padding rounded-xl flex flex-col h-full relative overflow-hidden transition-all duration-300 block cursor-pointer">
+<div class="flex justify-between items-start mb-10 relative z-10">
+<div class="w-12 h-12 rounded-lg border border-outline-variant flex items-center justify-center text-primary transition-colors group-hover:bg-primary group-hover:text-black">
+<span class="material-symbols-outlined">move_item</span>
+</div>
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-outline-variant/30 text-[11px] font-medium text-on-surface-variant bg-surface-container/40">
+<span class="w-1.5 h-1.5 rounded-full bg-outline animate-pulse"></span>In Development
+</span>
+</div>
+<h3 class="font-headline-h3 text-headline-h3 text-primary mb-4 relative z-10">EDC Accessories</h3>
+<p class="text-body-sm text-on-surface-variant flex-grow relative z-10 mb-6">
+                            Everyday carry items stripped to their essential core. Exploring future materiality concepts like titanium, carbon fiber, and glass filled polymers.
+                        </p>
+<div class="relative z-10 flex items-center gap-2 text-primary font-label-caps text-[11px] tracking-[0.2em] uppercase opacity-50 group-hover:opacity-100 transition-opacity">
+    Explore Concept <span class="material-symbols-outlined text-[14px] transform group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</div>
+</a>
+</div>
+</div>
+</section>
+
+<section class="py-section-gap-mobile md:py-section-gap-desktop bg-surface-container-lowest px-8" id="process">
+<div class="max-w-container-max mx-auto">
+<div class="bg-surface-card border border-outline-variant/20 rounded-2xl overflow-hidden relative">
+<div class="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
+<div class="grid md:grid-cols-2 gap-0">
+<div class="p-12 md:p-20 space-y-6">
+<span class="font-label-mono text-label-mono text-primary/60">01. THE PROCESS</span>
+<h2 class="font-headline-h2 text-headline-h2 text-primary">Driven by Real Friction</h2>
+<p class="text-on-surface-variant font-body-lg">In complete honesty I have no idea how I started but my first concept started by simply talking to doctors. I interviewed them about their daily workflows, and almost all of them pointed out the exact same flaw: the frustration of typing on flat, weirdly rubbery medical keyboards. By listening to the people actually experiencing the obstacle, I can use my CAD skills to forge a conceptual solution that makes a real difference.</p>
+</div>
+<div class="relative bg-black h-64 md:h-full overflow-hidden flex items-center justify-center border-l border-glass-border">
+<img class="w-full h-full object-contain p-12 hover:scale-105 transition-transform duration-[3s]" alt="Phase Glass PAG Logo" src="centerpag.png"/>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+
+<footer class="w-full py-section-gap-desktop border-t border-outline-variant/30 bg-background">
+<div class="max-w-container-max mx-auto px-8 flex flex-col md:flex-row justify-between items-center gap-stack-md">
+<div class="font-label-mono text-label-mono text-on-surface-variant">PHASE GLASS STUDIO</div>
+<div class="flex gap-8">
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Archives</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Methodology</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Contact</a>
+</div>
+<div class="font-body-sm text-body-sm text-secondary">© 2026 Phase Glass. Forged with intent.</div>
+</div>
+</footer>
+
+<script>
+        // Set your target launch date here!
+        const countDownDate = new Date("Dec 31, 2026 12:00:00").getTime();
+
+        const countdownInterval = setInterval(function() {
+            const now = new Date().getTime();
+            const distance = countDownDate - now;
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById("days").innerText = days.toString().padStart(2, '0');
+            document.getElementById("hours").innerText = hours.toString().padStart(2, '0');
+            document.getElementById("mins").innerText = minutes.toString().padStart(2, '0');
+            document.getElementById("secs").innerText = seconds.toString().padStart(2, '0');
+
+            if (distance < 0) {
+                clearInterval(countdownInterval);
+                document.getElementById("days").innerText = "00";
+                document.getElementById("hours").innerText = "00";
+                document.getElementById("mins").innerText = "00";
+                document.getElementById("secs").innerText = "00";
+            }
+        }, 1000);
+
+        // Interactive light effect on cards
+        document.querySelectorAll('.tilt-card').forEach(card => {
+            card.addEventListener('mousemove', e => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                card.style.setProperty('--mouse-x', `${x}px`);
+                card.style.setProperty('--mouse-y', `${y}px`);
+                
+                // Tightened the radius to 60% and slightly increased opacity so the cursor acts like a visible flashlight
+                card.style.backgroundImage = `radial-gradient(circle at ${x}px ${y}px, rgba(255,255,255,0.12) 0%, transparent 60%)`;
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                card.style.backgroundImage = 'none';
+            });
+        });
+
+        // Smooth reveal on scroll
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('hero-entrance');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('section > div').forEach(section => {
+            section.classList.add('opacity-0');
+            observer.observe(section);
+        });
+
+        // Nav Active State Highlight Logic
+        const sections = document.querySelectorAll('section');
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (pageYOffset >= (sectionTop - 200)) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('text-primary', 'border-b', 'border-primary', 'pb-1');
+                link.classList.add('text-on-surface-variant');
+                if (link.getAttribute('href').includes(current)) {
+                    link.classList.add('text-primary', 'border-b', 'border-primary', 'pb-1');
+                    link.classList.remove('text-on-surface-variant');
+                }
+            });
+        });
+    </script>
+</body></html>
