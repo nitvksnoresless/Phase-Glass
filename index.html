@@ -24,7 +24,7 @@
 
   /* ── Loader ── *
   /* Changed transform-origin from center center to 35% center to target the left side of the SVG during zoom */
-  #loader { position: fixed; inset: 0; background-color: #000; z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: background-color 1s ease 0.6s; transform-origin: 1% center; overflow: hidden; }
+  #loader { position: fixed; inset: 0; background-color: #000; z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: background-color 1s ease 0.6s; transform-origin: 40% center; overflow: hidden; }
   #loader-canvas { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .6; transition: opacity 0.6s ease; }
   
   .loader-exit { background-color: transparent !important; pointer-events: none; }
@@ -278,11 +278,11 @@
   </header>
 
   <main>
+    <div class="hero-bg" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; opacity: 0.6; pointer-events: none;">
+      <canvas id="hero-canvas" style="width:100%;height:100%;display:block"></canvas>
+    </div>
+
     <section class="hero">
-      <div class="hero-bg">
-        <canvas id="hero-canvas" style="width:100%;height:100%;display:block"></canvas>
-        <canvas id="fluid" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;visibility:hidden;pointer-events:none;"></canvas>
-      </div>
       <div class="hero-content">
         <span class="badge hero-el">Upcoming Release</span>
         <h1 class="hero-title hero-el">The Future. <span>Is Forged.</span></h1>
@@ -592,7 +592,7 @@ document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); }
   }, 2600); // Wait 2.5s before starting the zoom
 })();
 
-// ── Hero Background Auto-Cycler (10s Transitions) ──
+// ── Hero Background Auto-Cycler (6 Effects, 10s Transitions) ──
 (function(){
   const canvas=document.getElementById('hero-canvas');
   function sync(){const w=canvas.clientWidth||1280,h=canvas.clientHeight||720;if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}}
@@ -607,7 +607,6 @@ document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); }
   let gridRaf = null;
   let mouse = {x: canvas.width/2, y: canvas.height/2}, target = {x: canvas.width/2, y: canvas.height/2};
   
-  // Track cursor once globally
   addEventListener('mousemove', e => {
       const rect = canvas.getBoundingClientRect();
       if(rect.width && rect.height){
@@ -616,42 +615,113 @@ document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); }
       }
   });
 
-  // Start at a random effect, then cycle cleanly
-  let effectIndex = Math.floor(Math.random() * 4);
+  let effectIndex = Math.floor(Math.random() * 6);
 
-  // Core Engine: Swaps out the math and DOM without breaking the animation loop
   function loadEffect(index) {
       let fs = '';
 
-      // 1. Cleanup Grid DOM if we are switching away from it
+      // Clean up ALL dynamically injected DOM components
       const existingGrid = document.getElementById('grid-motion-overlay');
       if (existingGrid) existingGrid.remove();
+      const existingWaves = document.getElementById('waves-overlay');
+      if (existingWaves) existingWaves.remove();
       if (gridRaf !== null) { cancelAnimationFrame(gridRaf); gridRaf = null; }
 
-      // 2. Safely fade the Fluid Canvas using opacity and visibility properties
       const fluidCanvas = document.getElementById('fluid');
       if (fluidCanvas) {
-          fluidCanvas.style.opacity = (index === 3) ? '1' : '0';
-          fluidCanvas.style.visibility = (index === 3) ? 'visible' : 'hidden';
+          fluidCanvas.style.opacity = '0';
+          fluidCanvas.style.visibility = 'hidden';
       }
 
       if (index === 0) {
-          // 0: Original Floating Lines
-          fs=`precision highp float;varying vec2 v;uniform float t;uniform vec2 r;uniform vec2 m;
-          float h(float n){return fract(sin(n)*43758.5453);}
-          float n(vec2 p){vec2 i=floor(p),u=fract(p);u=u*u*(3.-2.*u);return mix(mix(h(i.x+i.y*57.),h(i.x+1.+i.y*57.),u.x),mix(h(i.x+(i.y+1.)*57.),h(i.x+1.+(i.y+1.)*57.),u.x),u.y);}
-          void main(){vec2 uv=v,p=uv*2.-1.;float asp=r.x/r.y;p.x*=asp;
-          vec2 mo=(m/r)*2.-1.;mo.x*=asp;float d=length(p-mo);p.y-=(mo.y-p.y)*exp(-d*12.)*1.5;
-          vec3 col=vec3(.015,.015,.02),lc=vec3(0);
-          for(float j=0.;j<4.;j++){float sp=.5+j*.2,ho=(j-1.5)*.45;
-            for(float i=0.;i<8.;i++){float ly=p.y+ho+i*.06-.2;float w=sin(p.x*(.6+j*.3)+t*.15*sp+i*.3)*.15+n(vec2(p.x*1.5+t*.15,i))*.2;
-              float dd=abs(ly+w);float l=smoothstep(.008,0.,dd),g=exp(-dd*25.)*.6;
-              vec3 c=mix(vec3(.4,.4,.5),vec3(.8,.8,.9),(p.x/asp+1.)*.5);c*=(1.-i/8.)*.7+.4;lc+=c*(l+g)*.5;}}
-          col+=lc;col*=mix(.2,1.,smoothstep(1.2,.8,abs(p.x/asp)));col*=smoothstep(-1.,-.4,p.y);
-          gl_FragColor=vec4(col,1.);}`;
+          // 0: Non-Interactive Floating Lines (Parallax and Cursor Bending completely disabled)
+          fs=`precision highp float;varying vec2 v;uniform float t;uniform vec2 r;
+          
+          mat2 rotate(float angle) {
+              return mat2(cos(angle), sin(angle), -sin(angle), cos(angle));
+          }
+          
+          vec3 getLineColor(float pct) {
+              vec3 c1 = vec3(1.0); // #ffffff
+              vec3 c2 = vec3(0.0); // #000000
+              vec3 c3 = vec3(0.0); // #000000
+              if (pct < 0.5) return mix(c1, c2, pct * 2.0);
+              return mix(c2, c3, (pct - 0.5) * 2.0);
+          }
+          
+          float wave(vec2 uv, float offset) {
+              float time = t * 3.2; // animationSpeed = 3.2
+              float x_offset = offset;
+              float x_movement = time * 0.1;
+              float amp = sin(offset + time * 0.2) * 0.3;
+              float y = sin(uv.x + x_offset + x_movement) * amp;
+              
+              float m_val = uv.y - y;
+              return 0.0175 / max(abs(m_val) + 0.01, 1e-3) + 0.01;
+          }
+          
+          void main() {
+              vec2 baseUv = v * 2.0 - 1.0;
+              baseUv.y *= -1.0;
+              baseUv.x *= r.x / r.y;
+              
+              vec3 col = vec3(0.0);
+              
+              // ── Bottom Wave Layer (10 lines, 37.5 distance) ──
+              for (int i = 0; i < 10; ++i) {
+                  float fi = float(i);
+                  float pct = fi / 9.0;
+                  vec3 lineCol = getLineColor(pct);
+                  
+                  vec3 bottomWavePosition = vec3(2.0, -0.7, 0.4);
+                  float angle = bottomWavePosition.z * log(length(baseUv) + 1.0);
+                  vec2 ruv = baseUv * rotate(angle);
+                  
+                  col += lineCol * wave(
+                      ruv + vec2(0.375 * fi + bottomWavePosition.x, bottomWavePosition.y),
+                      1.5 + 0.2 * fi
+                  ) * 0.2;
+              }
+              
+              // ── Middle Wave Layer (10 lines, 37.5 distance) ──
+              for (int i = 0; i < 10; ++i) {
+                  float fi = float(i);
+                  float pct = fi / 9.0;
+                  vec3 lineCol = getLineColor(pct);
+                  
+                  vec3 middleWavePosition = vec3(5.0, 0.0, 0.2);
+                  float angle = middleWavePosition.z * log(length(baseUv) + 1.0);
+                  vec2 ruv = baseUv * rotate(angle);
+                  
+                  col += lineCol * wave(
+                      ruv + vec2(0.375 * fi + middleWavePosition.x, middleWavePosition.y),
+                      2.0 + 0.15 * fi
+                  );
+              }
+              
+              // ── Top Wave Layer (10 lines, 37.5 distance) ──
+              for (int i = 0; i < 10; ++i) {
+                  float fi = float(i);
+                  float pct = fi / 9.0;
+                  vec3 lineCol = getLineColor(pct);
+                  
+                  vec3 topWavePosition = vec3(10.0, 0.5, -0.4);
+                  float angle = topWavePosition.z * log(length(baseUv) + 1.0);
+                  vec2 ruv = baseUv * rotate(angle);
+                  ruv.x *= -1.0;
+                  
+                  col += lineCol * wave(
+                      ruv + vec2(0.375 * fi + topWavePosition.x, topWavePosition.y),
+                      1.0 + 0.2 * fi
+                  ) * 0.1;
+              }
+              
+              vec3 finalBg = vec3(0.015, 0.015, 0.02);
+              gl_FragColor = vec4(finalBg + col, 1.0);
+          }`;
       }
       else if (index === 1) {
-          // 1: Grid Motion (Vanilla DOM Port)
+          // 1: Grid Motion (Autonomous & Truly Infinite Loop)
           fs=`precision highp float; void main(){ gl_FragColor = vec4(0.015, 0.015, 0.02, 1.0); }`;
 
           setTimeout(() => {
@@ -666,11 +736,11 @@ document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); }
                   const style = document.createElement('style');
                   style.id = 'grid-motion-style';
                   style.innerHTML = `
-                    .gm-row { display: flex; white-space: nowrap; width: 150vw; margin-left: -25vw; gap: 2vw; margin-bottom: 2vw; justify-content: center; }
+                    .gm-row { display: flex; white-space: nowrap; gap: 2vw; margin-bottom: 2vw; }
                     .gm-item { flex-shrink: 0; width: 18vw; height: 12vw; border-radius: 8px; background-size: cover; background-position: center; background-color: #111; opacity: 0.7; filter: grayscale(50%) brightness(1.2); transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 10px 30px -10px rgba(255,255,255,0.05); }
                     .gm-item:hover { opacity: 1; filter: grayscale(0%) brightness(1.1); transform: scale(1.03); z-index: 10; border-color: rgba(255,255,255,0.4); box-shadow: 0 15px 40px -10px rgba(255,255,255,0.15); }
                     @media(max-width: 768px) {
-                      .gm-row { width: 300vw; margin-left: -100vw; gap: 4vw; margin-bottom: 4vw; }
+                      .gm-row { gap: 4vw; margin-bottom: 4vw; }
                       .gm-item { width: 35vw; height: 25vw; }
                     }
                   `;
@@ -679,39 +749,47 @@ document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); }
 
               const imgUrl = "https://images.unsplash.com/photo-1748370987492-eb390a61dcda?q=80&w=3464&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
               const rows = [];
-              const inertiaLerpFactors = [0.03, 0.04, 0.05, 0.06];
 
               for(let i = 0; i < 4; i++) {
                   const row = document.createElement('div');
                   row.className = 'gm-row';
-                  for(let j = 0; j < 7; j++) {
+                  row.style.width = '300vw'; // Oversized width to cover the screen entirely
+                  row.style.justifyContent = 'flex-start';
+                  row.style.marginLeft = '0';
+                  
+                  // Generate 15 items per row to easily hide the loop jump
+                  for(let j = 0; j < 15; j++) {
                       const item = document.createElement('div');
                       item.className = 'gm-item';
                       item.style.backgroundImage = `url('${imgUrl}')`;
                       row.appendChild(item);
                   }
                   gridContainer.appendChild(row);
-                  rows.push({ el: row, currentX: 0, targetX: 0, factor: inertiaLerpFactors[i] });
+                  
+                  // Alternate directions row-by-row
+                  const direction = i % 2 === 0 ? -1 : 1;
+                  const speed = 0.08 * direction;
+                  // Start right-moving rows at -20vw offset so they don't snap visibly at frame 1
+                  const initialOffset = direction === 1 ? -20 : 0; 
+                  rows.push({ el: row, offset: initialOffset, speed: speed });
               }
               heroBg.appendChild(gridContainer);
 
-              // Track Mouse Position for Interactive Motion
-              let gmMouseX = window.innerWidth / 2;
-              window.addEventListener('mousemove', e => { gmMouseX = e.clientX; });
-
               function animateGrid() {
-                  const maxMoveAmount = 300; 
-                  rows.forEach((rowObj, index) => {
-                      const direction = index % 2 === 0 ? 1 : -1;
+                  rows.forEach(rowObj => {
+                      rowObj.offset += rowObj.speed;
                       
-                      // Calculate target position based on mouse constraints
-                      rowObj.targetX = ((gmMouseX / window.innerWidth) * maxMoveAmount - maxMoveAmount / 2) * direction;
+                      // TRULY INFINITE LOOP Math
+                      // Each tile is exactly 20vw wide (18vw width + 2vw gap).
+                      // When a row moves exactly 20vw, we instantly snap it back by 20vw.
+                      // Because all tiles are identical, this jump is 100% invisible.
+                      if (rowObj.speed < 0 && rowObj.offset <= -20) {
+                          rowObj.offset += 20; 
+                      } else if (rowObj.speed > 0 && rowObj.offset >= 0) {
+                          rowObj.offset -= 20; 
+                      }
                       
-                      // Native Lerp (Linear Interpolation) for smooth GSAP-style inertia physics
-                      rowObj.currentX += (rowObj.targetX - rowObj.currentX) * rowObj.factor;
-                      
-                      // Apply the translation
-                      rowObj.el.style.transform = `translate3d(${rowObj.currentX}px, 0, 0)`;
+                      rowObj.el.style.transform = `translate3d(${rowObj.offset}vw, 0, 0)`;
                   });
                   gridRaf = requestAnimationFrame(animateGrid);
               }
@@ -719,7 +797,6 @@ document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); }
           }, 50);
       }
       else if (index === 2) {
-          // 2: Gradient Blinds (Custom Settings)
           fs=`precision highp float;varying vec2 v;uniform float t;uniform vec2 r;uniform vec2 m;
           mat2 rot(float a) { float c=cos(a), s=sin(a); return mat2(c, -s, s, c); }
           void main() {
@@ -728,19 +805,292 @@ document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); }
               uvMod.x += sin(uvMod.y * 6.0) * 0.03; uvMod.y += cos(uvMod.x * 6.0) * 0.03;
               vec3 c0 = vec3(1.0, 1.0, 1.0); vec3 c1 = vec3(0.25, 0.26, 0.28);
               vec3 base = mix(c0, c1, clamp(uvMod.x, 0.0, 1.0));
-              float d = length(uv0 - (m / r)); float spot = clamp(1.0 - (d / 0.6), 0.0, 1.0);
+              
+              // Reduced spotlight radius (0.6 -> 0.35)
+              float d = length(uv0 - (m / r)); 
+              float spot = clamp(1.0 - (d / 0.35), 0.0, 1.0);
+              
               float stripe = 1.0 - fract(uvMod.x * 37.0 - t * 0.4);
-              vec3 col = vec3(spot) * 1.2 + base * 0.8 - vec3(stripe * 0.35);
+              
+              // Reduced spotlight brightness (1.2 -> 0.6)
+              vec3 col = vec3(spot) * 0.6 + base * 0.8 - vec3(stripe * 0.35);
               col *= exp(-length(p) * 0.5);
               gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
           }`;
       }
-      else {
-          // 3: Liquid Splash Cursor (Engine running in independent canvas)
+      else if (index === 3) {
+          // 3: Dynamic Glowing Strands (Custom Settings Update)
+          fs=`precision highp float;varying vec2 v;uniform float t;uniform vec2 r;uniform vec2 m;
+          const float PI = 3.14159265;
+          vec3 samplePalette(float val) {
+              val = fract(val); float scaled = val * 3.0; float blend = fract(scaled);
+              if (scaled < 1.0) return mix(vec3(1.0), vec3(0.0), blend);
+              if (scaled < 2.0) return mix(vec3(0.0), vec3(1.0), blend);
+              return vec3(1.0);
+          }
+          void main() {
+              vec2 uv = (v * r - 0.5 * r) / r.y; uv /= 3.0;
+              float e = 0.06; // Intensity = 0 mapping
+              float env = pow(max(cos(uv.x * PI * 1.3), 0.0), 1.5); // Taper = 1.5
+              vec3 col = vec3(0.0);
+              
+              // Count = 6
+              for (int i = 0; i < 6; i++) { 
+                  float fi = float(i); 
+                  float ph = fi * 1.7 * 0.7; // Spread = 0.7
+                  float freq = (2.0 + fi * 0.35) * 2.4; // Waviness = 2.4
+                  float spd = 1.4 + fi * 1.2;
+                  float tt = t * 0.1; // Speed = 0.1
+                  
+                  float w = sin(uv.x * freq + tt * spd + ph) * 0.60 + sin(uv.x * freq * 1.1 - tt * spd * 0.7 + ph * 1.7) * 0.40;
+                  float amp = (0.1 + 0.02 * e) * env * 1.7; // Amplitude = 1.7
+                  float y = w * amp; 
+                  float d = abs(uv.y - y);
+                  
+                  float thick = (0.001 + 0.05 * e) * (0.35 + env) * 2.7; // Thickness = 2.7
+                  float g = thick / (d + thick * 0.45); g = g * g;
+                  
+                  // hueShift = 0, count = 6
+                  float h = fi / 6.0 + uv.x * 0.30 + t * 0.04; 
+                  col += samplePalette(h) * g * env;
+              }
+              
+              col *= 0.45 + 0.7 * e; 
+              col = 1.0 - exp(-col * 3.0); // Glow = 3
+              
+              // Saturation = 0 (Pure Grayscale)
+              float gray = dot(col, vec3(0.2126, 0.7152, 0.0722)); 
+              col = vec3(gray);
+              
+              vec2 p = v * 2.0 - 1.0; p.x *= r.x / r.y; col *= exp(-length(p) * 0.5);
+              gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+          }`;
+      }
+      else if (index === 4) {
+          // 4: Light Rays (Custom Settings: Cyan, Top-Center, Mouse Influence)
+          fs=`precision highp float;varying vec2 v;uniform float t;uniform vec2 r;uniform vec2 m;
+          
+          float noise(vec2 st) {
+              return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
+          }
+
+          float rayStrength(vec2 raySource, vec2 rayRefDirection, vec2 coord, float seedA, float seedB, float speed) {
+              vec2 sourceToCoord = coord - raySource;
+              vec2 dirNorm = normalize(sourceToCoord);
+              float cosAngle = dot(dirNorm, rayRefDirection);
+
+              float distortedAngle = cosAngle + 0.05 * sin(t * 2.0 + length(sourceToCoord) * 0.01) * 0.2; // distortion = 0.05
+              float spreadFactor = pow(max(distortedAngle, 0.0), 1.0 / max(2.0, 0.001)); // lightSpread = 2.0
+
+              float distance = length(sourceToCoord);
+              float maxDistance = r.x * 1.2; // rayLength = 1.2
+              float lengthFalloff = clamp((maxDistance - distance) / maxDistance, 0.0, 1.0);
+              
+              float fadeFalloff = clamp((r.x * 1.6 - distance) / (r.x * 1.6), 0.5, 1.0); // fadeDistance = 1.6
+              
+              float baseStrength = clamp(
+                  (0.45 + 0.15 * sin(distortedAngle * seedA + t * speed)) +
+                  (0.3 + 0.2 * cos(-distortedAngle * seedB + t * speed)),
+                  0.0, 1.0
+              );
+
+              return baseStrength * lengthFalloff * fadeFalloff * spreadFactor;
+          }
+
+          void main() {
+              vec2 fragCoord = v * r;
+              vec2 coord = vec2(fragCoord.x, r.y - fragCoord.y);
+              
+              // Top-Center Origin
+              vec2 rayPos = vec2(r.x * 0.5, r.y * -0.2); 
+              vec2 rayDir = vec2(0.0, 1.0);
+              
+              // Follow Mouse Logic (mouseInfluence = 0.1)
+              vec2 mPos = vec2(m.x, r.y - m.y); 
+              vec2 mouseDirection = normalize(mPos - rayPos);
+              vec2 finalRayDir = normalize(mix(rayDir, mouseDirection, 0.1));
+
+              vec4 rays1 = vec4(1.0) * rayStrength(rayPos, finalRayDir, coord, 36.2214, 21.11349, 1.5 * 1.2); // speed = 1.2
+              vec4 rays2 = vec4(1.0) * rayStrength(rayPos, finalRayDir, coord, 22.3991, 18.0234, 1.1 * 1.2);
+
+              vec4 color = rays1 * 0.5 + rays2 * 0.4;
+
+              // Noise (noiseAmount = 0.1)
+              float n = noise(coord * 0.01 + t * 0.1);
+              color.rgb *= (0.9 + 0.1 * n);
+
+              float brightness = 1.0 - (coord.y / r.y);
+              color.r *= 0.1 + brightness * 0.8;
+              color.g *= 0.3 + brightness * 0.6;
+              color.b *= 0.5 + brightness * 0.5;
+
+              // Saturation (1.7)
+              float gray = dot(color.rgb, vec3(0.299, 0.587, 0.114));
+              color.rgb = mix(vec3(gray), color.rgb, 1.7);
+
+              // Cyan Color
+              color.rgb *= vec3(0.0, 1.0, 1.0); 
+
+              // Studio Base blending
+              vec3 bg = vec3(0.015, 0.015, 0.02);
+              vec3 finalColor = bg + color.rgb;
+              
+              vec2 p = v * 2.0 - 1.0;
+              p.x *= r.x / r.y;
+              finalColor *= exp(-length(p) * 0.25);
+
+              gl_FragColor = vec4(clamp(finalColor, 0.0, 1.0), 1.0);
+          }`;
+      }
+      else if (index === 5) {
+          // 5: Waves Component (Vanilla Ported via 2D Canvas)
           fs=`precision highp float; void main(){ gl_FragColor = vec4(0.015, 0.015, 0.02, 1.0); }`;
+
+          setTimeout(() => {
+              const heroBg = document.querySelector('.hero-bg');
+              if (!heroBg || index !== effectIndex) return;
+
+              const wavesContainer = document.createElement('div');
+              wavesContainer.id = 'waves-overlay';
+              wavesContainer.style.cssText = 'position:absolute;inset:0;overflow:hidden;background:transparent;z-index:5;';
+
+              const wavesCanvas = document.createElement('canvas');
+              wavesCanvas.style.cssText = 'display:block;width:100%;height:100%;';
+              wavesContainer.appendChild(wavesCanvas);
+              heroBg.appendChild(wavesContainer);
+
+              const ctx = wavesCanvas.getContext('2d');
+              
+              // Physics & Noise Engines for Waves
+              class Grad {
+                  constructor(x,y,z){this.x=x;this.y=y;this.z=z;}
+                  dot2(x,y){return this.x*x+this.y*y;}
+              }
+              class Noise {
+                  constructor(seed=0){
+                      this.grad3=[new Grad(1,1,0),new Grad(-1,1,0),new Grad(1,-1,0),new Grad(-1,-1,0),new Grad(1,0,1),new Grad(-1,0,1),new Grad(1,0,-1),new Grad(-1,0,-1),new Grad(0,1,1),new Grad(0,-1,1),new Grad(0,1,-1),new Grad(0,-1,-1)];
+                      this.p=[151,160,137,91,90,15,131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,190,6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,35,11,32,57,177,33,88,237,149,56,87,174,20,125,136,171,168,68,175,74,165,71,134,139,48,27,166,77,146,158,231,83,111,229,122,60,211,133,230,220,105,92,41,55,46,245,40,244,102,143,54,65,25,63,161,1,216,80,73,209,76,132,187,208,89,18,169,200,196,135,130,116,188,159,86,164,100,109,198,173,186,3,64,52,217,226,250,124,123,5,202,38,147,118,126,255,82,85,212,207,206,59,227,47,16,58,17,182,189,28,42,223,183,170,213,119,248,152,2,44,154,163,70,221,153,101,155,167,43,172,9,129,22,39,253,19,98,108,110,79,113,224,232,178,185,112,104,218,246,97,228,251,34,242,193,238,210,144,12,191,179,162,241,81,51,145,235,249,14,239,107,49,192,214,31,181,199,106,157,184,84,204,176,115,121,50,45,127,4,150,254,138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180];
+                      this.perm=new Array(512); this.gradP=new Array(512); this.seed(seed);
+                  }
+                  seed(seed) {
+                      if(seed>0 && seed<1) seed*=65536;
+                      seed=Math.floor(seed);
+                      if(seed<256) seed|=seed<<8;
+                      for(let i=0;i<256;i++){
+                          let v=i&1 ? this.p[i]^(seed&255) : this.p[i]^((seed>>8)&255);
+                          this.perm[i]=this.perm[i+256]=v;
+                          this.gradP[i]=this.gradP[i+256]=this.grad3[v%12];
+                      }
+                  }
+                  fade(t){return t*t*t*(t*(t*6-15)+10);}
+                  lerp(a,b,t){return(1-t)*a+t*b;}
+                  perlin2(x,y) {
+                      let X=Math.floor(x), Y=Math.floor(y);
+                      x-=X; y-=Y; X&=255; Y&=255;
+                      const n00=this.gradP[X+this.perm[Y]].dot2(x,y);
+                      const n01=this.gradP[X+this.perm[Y+1]].dot2(x,y-1);
+                      const n10=this.gradP[X+1+this.perm[Y]].dot2(x-1,y);
+                      const n11=this.gradP[X+1+this.perm[Y+1]].dot2(x-1,y-1);
+                      const u=this.fade(x);
+                      return this.lerp(this.lerp(n00,n10,u), this.lerp(n01,n11,u), this.fade(y));
+                  }
+              }
+
+              const noise = new Noise(Math.random());
+              let lines = [];
+              let bounding = wavesContainer.getBoundingClientRect();
+              const wMouse = { x: -10, y: 0, lx: 0, ly: 0, sx: 0, sy: 0, v: 0, vs: 0, a: 0, set: false };
+
+              function setSize() {
+                  bounding = wavesContainer.getBoundingClientRect();
+                  wavesCanvas.width = bounding.width;
+                  wavesCanvas.height = bounding.height;
+              }
+              function setLines() {
+                  lines = [];
+                  const oWidth = bounding.width + 200, oHeight = bounding.height + 30;
+                  const totalLines = Math.ceil(oWidth / 12);
+                  const totalPoints = Math.ceil(oHeight / 36);
+                  const xStart = (bounding.width - 12 * totalLines) / 2;
+                  const yStart = (bounding.height - 36 * totalPoints) / 2;
+                  for (let i = 0; i <= totalLines; i++) {
+                      const pts = [];
+                      for (let j = 0; j <= totalPoints; j++) {
+                          pts.push({ x: xStart + 12 * i, y: yStart + 36 * j, wave: { x: 0, y: 0 }, cursor: { x: 0, y: 0, vx: 0, vy: 0 } });
+                      }
+                      lines.push(pts);
+                  }
+              }
+
+              setSize(); setLines();
+              window.addEventListener('resize', () => { setSize(); setLines(); });
+              window.addEventListener('mousemove', e => {
+                  wMouse.x = e.clientX - bounding.left; wMouse.y = e.clientY - bounding.top;
+                  if(!wMouse.set){ wMouse.sx=wMouse.x; wMouse.sy=wMouse.y; wMouse.lx=wMouse.x; wMouse.ly=wMouse.y; wMouse.set=true; }
+              });
+
+              function moved(point, withCursor = true) {
+                  const x = point.x + point.wave.x + (withCursor ? point.cursor.x : 0);
+                  const y = point.y + point.wave.y + (withCursor ? point.cursor.y : 0);
+                  return { x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 };
+              }
+
+              function tick(t) {
+                  wMouse.sx += (wMouse.x - wMouse.sx) * 0.1;
+                  wMouse.sy += (wMouse.y - wMouse.sy) * 0.1;
+                  const dx = wMouse.x - wMouse.lx, dy = wMouse.y - wMouse.ly;
+                  wMouse.v = Math.hypot(dx, dy);
+                  wMouse.vs += (wMouse.v - wMouse.vs) * 0.1;
+                  wMouse.vs = Math.min(100, wMouse.vs);
+                  wMouse.lx = wMouse.x; wMouse.ly = wMouse.y;
+                  wMouse.a = Math.atan2(dy, dx);
+
+                  lines.forEach(pts => {
+                      pts.forEach(p => {
+                          const move = noise.perlin2((p.x + t * 0.02) * 0.002, (p.y + t * 0.01) * 0.0015) * 12;
+                          p.wave.x = Math.cos(move) * 40;
+                          p.wave.y = Math.sin(move) * 20;
+
+                          const mdx = p.x - wMouse.sx, mdy = p.y - wMouse.sy;
+                          const dist = Math.hypot(mdx, mdy), l = Math.max(175, wMouse.vs);
+                          if (dist < l) {
+                              const s = 1 - dist / l;
+                              const f = Math.cos(dist * 0.001) * s;
+                              p.cursor.vx += Math.cos(wMouse.a) * f * l * wMouse.vs * 0.00065;
+                              p.cursor.vy += Math.sin(wMouse.a) * f * l * wMouse.vs * 0.00065;
+                          }
+                          p.cursor.vx += (0 - p.cursor.x) * 0.01;
+                          p.cursor.vy += (0 - p.cursor.y) * 0.01;
+                          p.cursor.vx *= 0.9; p.cursor.vy *= 0.9;
+                          p.cursor.x += p.cursor.vx * 2; p.cursor.y += p.cursor.vy * 2;
+                          p.cursor.x = Math.min(120, Math.max(-120, p.cursor.x));
+                          p.cursor.y = Math.min(120, Math.max(-120, p.cursor.y));
+                      });
+                  });
+
+                  ctx.clearRect(0, 0, bounding.width, bounding.height);
+                  ctx.beginPath();
+                  ctx.strokeStyle = '#ffffff'; // White colored lines as requested
+                  ctx.lineWidth = 1;
+                  lines.forEach(points => {
+                      let p1 = moved(points[0], false);
+                      ctx.moveTo(p1.x, p1.y);
+                      points.forEach((p, idx) => {
+                          const isLast = idx === points.length - 1;
+                          p1 = moved(p, !isLast);
+                          const p2 = moved(points[idx + 1] || points[points.length - 1], !isLast);
+                          ctx.lineTo(p1.x, p1.y);
+                          if (isLast) ctx.moveTo(p2.x, p2.y);
+                      });
+                  });
+                  ctx.stroke();
+
+                  gridRaf = requestAnimationFrame(tick);
+              }
+              gridRaf = requestAnimationFrame(tick);
+          }, 50);
       }
 
-      // Memory-safe WebGL Program swap
       if (prog) gl.deleteProgram(prog);
       prog = gl.createProgram();
       gl.attachShader(prog, sh(gl.VERTEX_SHADER, vs));
@@ -760,32 +1110,23 @@ document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); }
       uM = gl.getUniformLocation(prog, 'm');
   }
 
-  // Init the first background
   loadEffect(effectIndex);
 
-  // ── Apply CSS Transition to Wrapper for Smooth Fades ──
   const heroBgWrapper = document.querySelector('.hero-bg');
   if(heroBgWrapper) {
       heroBgWrapper.style.transition = 'opacity 1.2s ease-in-out';
   }
 
-  // ── Cycle cleanly every 10 seconds with cinematic fade in/out ──
   setInterval(() => {
-      // 1. Smoothly fade out the current background to pure black
       if(heroBgWrapper) heroBgWrapper.style.opacity = '0';
       
-      // 2. Wait for the fade to finish, swap the effect silently, and fade back up
       setTimeout(() => {
-          effectIndex = (effectIndex + 1) % 4;
+          effectIndex = (effectIndex + 1) % 6;
           loadEffect(effectIndex);
-          
-          // Restore to the original 0.6 CSS opacity to trigger the fade-in
           if(heroBgWrapper) heroBgWrapper.style.opacity = '0.6'; 
-      }, 1200); // Waits exactly 1.2 seconds for the fade-out to finish
-      
-  }, 10000); // 10 second total cycle
+      }, 1200); 
+  }, 10000); 
 
-  // Master Render Loop
   function draw(t){
       if(typeof ResizeObserver === 'undefined') sync();
       gl.viewport(0, 0, canvas.width, canvas.height);
@@ -1181,13 +1522,39 @@ function submitNotify(e){
     function updateKeywords() { let displayKeywords = []; if (config.SHADING) displayKeywords.push('SHADING'); displayMaterial.setKeywords(displayKeywords); }
     updateKeywords(); initFramebuffers(); let lastUpdateTime = Date.now(); let colorUpdateTimer = 0.0;
 
-    function updateFrame() { const dt = calcDeltaTime(); if (resizeCanvas()) initFramebuffers(); updateColors(dt); applyInputs(); step(dt); render(null); requestAnimationFrame(updateFrame); }
+    let autoTime = 0; // Track time for autonomous motion
+
+    function updateFrame() { 
+        const dt = calcDeltaTime(); 
+        if (resizeCanvas()) initFramebuffers(); 
+        updateColors(dt); 
+        applyInputs(); 
+        
+        // ── Autonomous Ghost Cursor Motion ──
+        // This generates a continuous, elegant figure-8 fluid swirl automatically
+        autoTime += dt;
+        
+        // Calculate smooth UV coordinates (0.0 to 1.0)
+        let autoX = 0.5 + Math.sin(autoTime * 1.2) * 0.35; 
+        let autoY = 0.5 + Math.sin(autoTime * 1.8) * 0.25; 
+        
+        // Calculate the fluid push velocity based on the movement direction
+        let autoDx = Math.cos(autoTime * 1.2) * 1500; 
+        let autoDy = Math.cos(autoTime * 1.8) * 1500; 
+        
+        // Inject the automatic splat into the fluid physics engine
+        splat(autoX, autoY, autoDx, autoDy, generateColor());
+
+        step(dt); 
+        render(null); 
+        requestAnimationFrame(updateFrame); 
+    }
+    
     function calcDeltaTime() { let now = Date.now(); let dt = (now - lastUpdateTime) / 1000; dt = Math.min(dt, 0.016666); lastUpdateTime = now; return dt; }
     function resizeCanvas() { let width = scaleByPixelRatio(canvas.clientWidth); let height = scaleByPixelRatio(canvas.clientHeight); if (canvas.width !== width || canvas.height !== height) { canvas.width = width; canvas.height = height; return true; } return false; }
 
     function updateColors(dt) { colorUpdateTimer += dt * config.COLOR_UPDATE_SPEED; if (colorUpdateTimer >= 1) { colorUpdateTimer = wrap(colorUpdateTimer, 0, 1); pointers.forEach(p => { p.color = generateColor(); }); } }
     function applyInputs() { pointers.forEach(p => { if (p.moved) { p.moved = false; splatPointer(p); } }); }
-
     function step(dt) {
         gl.disable(gl.BLEND); curlProgram.bind(); gl.uniform2f(curlProgram.uniforms.texelSize, velocity.texelSizeX, velocity.texelSizeY); gl.uniform1i(curlProgram.uniforms.uVelocity, velocity.read.attach(0)); blit(curl);
         vorticityProgram.bind(); gl.uniform2f(vorticityProgram.uniforms.texelSize, velocity.texelSizeX, velocity.texelSizeY); gl.uniform1i(vorticityProgram.uniforms.uVelocity, velocity.read.attach(0)); gl.uniform1i(vorticityProgram.uniforms.uCurl, curl.attach(1)); gl.uniform1f(vorticityProgram.uniforms.curl, config.CURL); gl.uniform1f(vorticityProgram.uniforms.dt, dt); blit(velocity.write); velocity.swap();
