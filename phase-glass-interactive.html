@@ -11,10 +11,10 @@
 
   /* ── Custom Cursor ── */
   #cursor { position: fixed; width: 12px; height: 12px; background: #fff; border-radius: 50%; pointer-events: none; z-index: 999999; transform: translate(-50%,-50%); mix-blend-mode: difference; transition: width .2s, height .2s; }
-  /* Disabled the outer trailing cursor ring completely */
-  #cursor-ring { display: none; }
+  #cursor-ring { position: fixed; width: 36px; height: 36px; border: 1px solid rgba(255,255,255,.4); border-radius: 50%; pointer-events: none; z-index: 999998; transform: translate(-50%,-50%); transition: width .4s cubic-bezier(.16,1,.3,1), height .4s cubic-bezier(.16,1,.3,1), border-color .3s; }
   body.cursor-hover #cursor { width: 20px; height: 20px; }
-  @media (max-width: 768px) { body { cursor: auto; } #cursor { display: none; } }
+  body.cursor-hover #cursor-ring { width: 54px; height: 54px; border-color: rgba(255,255,255,.6); }
+  @media (max-width: 768px) { body { cursor: auto; } #cursor, #cursor-ring { display: none; } }
 
   /* ── Scroll Progress ── */
   #scroll-progress { position: fixed; top: 0; left: 0; height: 1px; background: linear-gradient(to right, rgba(255,255,255,.4), rgba(255,255,255,.9)); z-index: 99999; width: 0%; transition: width .05s linear; }
@@ -23,37 +23,18 @@
   .grain { position: fixed; inset: 0; pointer-events: none; z-index: 9999; opacity: .04; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); filter: contrast(150%); mix-blend-mode: overlay; }
 
   /* ── Loader ── */
-  /* Changed transform-origin from center center to 35% center to target the left side of the SVG during zoom */
-  #loader { position: fixed; inset: 0; background-color: #000; z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: background-color 1s ease 0.6s; transform-origin: 1% center; overflow: hidden; }
-  #loader-canvas { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .6; transition: opacity 0.6s ease; }
-  
-  .loader-exit { background-color: transparent !important; pointer-events: none; }
-  .loader-exit #loader-canvas { opacity: 0; }
-  /* Target only the remaining white layout line to hide early on transition */
-  .loader-exit div > div { opacity: 0; transition: opacity 0.3s; }
-  
-  .loader-exit .animated-logo { 
-      filter: none !important; 
-      /* Fixed: Shifted the origin point directly onto the scaling vector so it forces the zoom through the left side */
-      transform-origin: 40% center; 
-      animation: logoZoom 2s cubic-bezier(0.7, 0, 0.1, 1) forwards; 
-  }
-  
-  @keyframes logoZoom { 
-      0% { transform: scale(1); opacity: 1; } 
-      30% { transform: scale(0.95); opacity: 1; } 
-      100% { transform: scale(150); opacity: 0; visibility: hidden; } 
-  }
-  
+  #loader { position: fixed; inset: 0; background: #000; z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  #loader-canvas { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .6; }
+  .loader-exit { animation: loaderOut 1.5s cubic-bezier(.8,0,.2,1) forwards; }
+  @keyframes loaderOut { 0%{transform:scale(1);filter:blur(0);opacity:1} 40%{filter:blur(8px);transform:scale(1.05);opacity:1} 100%{transform:scale(1.15);filter:blur(20px);opacity:0;visibility:hidden} }
   .animated-logo path, .animated-logo polygon { stroke:#fff; stroke-width:1.5px; fill:rgba(255,255,255,0); stroke-dasharray:800; stroke-dashoffset:800; animation: drawLines 2s cubic-bezier(.25,1,.5,1) forwards, fillColors 1.5s cubic-bezier(.25,1,.5,1) 1.2s forwards; }
   @keyframes drawLines { to { stroke-dashoffset:0 } }
   @keyframes fillColors { to { fill:rgba(255,255,255,1); stroke:rgba(255,255,255,0) } }
 
   /* ── Main ── */
-  #main { opacity: 0; transform: scale(1.05) translateY(30px); will-change: transform, opacity; }
-  /* Changed the animation delay parameter from 0.3s to 0.75s */
-  .main-enter { animation: siteReveal 1.5s cubic-bezier(0.2, 0.8, 0.2, 1) 1s forwards; }
-  @keyframes siteReveal { to { opacity:1; transform:scale(1) translateY(0); } }
+  #main { opacity: 0; transform: scale(.97) translateY(20px); filter: blur(10px); }
+  .main-enter { animation: siteReveal 1.5s cubic-bezier(.8,0,.2,1) .2s forwards; }
+  @keyframes siteReveal { to { opacity:1; transform:scale(1) translateY(0); filter:blur(0) } }
 
   /* ── Hero entrance ── */
   body:not(.loaded) .hero-el { animation-play-state: paused !important; opacity: 0; }
@@ -83,19 +64,8 @@
   .hero-bg { position: absolute; inset: 0; opacity: .6; z-index: 0; }
   .hero-content { position: relative; z-index: 10; max-width: 896px; padding: 0 32px; text-align: center; padding-top: 64px; }
   .badge { display: inline-block; font-size: 11px; font-weight: 500; color: #8f9194; text-transform: uppercase; letter-spacing: .24em; padding: 6px 16px; border: 1px solid rgba(68,71,74,.5); border-radius: 9999px; margin-bottom: 24px; }
-  /* Line-height adjusted to 1.2 to safely protect letter descenders from clipping */
-  .hero-title { font-size: clamp(48px,8vw,88px); line-height: 1.2; letter-spacing: -.035em; font-weight: 600; color: #fff; margin: 0 0 24px; }
-  
-  .hero-title span { 
-      font-weight: 300; 
-      color: #fff;
-      opacity: 0.6; 
-      display: inline;
-      background: none;
-      -webkit-background-clip: initial;
-      -webkit-text-fill-color: initial;
-      filter: none;
-  }
+  .hero-title { font-size: clamp(48px,8vw,88px); line-height: .98; letter-spacing: -.035em; font-weight: 600; color: #fff; margin: 0 0 24px; }
+  .hero-title span { font-weight: 300; opacity: .6; }
   .hero-sub { font-size: 18px; color: #c7c6cb; line-height: 1.6; max-width: 640px; margin: 0 auto 40px; }
   .countdown-label { font-size: 10px; letter-spacing: .2em; color: #c5c7c9; opacity: .7; text-transform: uppercase; font-family: 'JetBrains Mono', monospace; margin-bottom: 16px; }
   .countdown-row { display: flex; justify-content: center; gap: 20px; margin-bottom: 48px; }
@@ -107,10 +77,8 @@
   @media(min-width:640px){ .hero-btns { flex-direction: row; justify-content: center; } }
   .btn-primary { background: #fff; color: #000; padding: 20px 40px; border-radius: 9999px; font-size: 11px; letter-spacing: .2em; text-transform: uppercase; font-weight: 500; text-decoration: none; transition: transform .2s; display: inline-block; }
   .btn-primary:hover { transform: scale(1.05); }
-  
-  /* Styled btn-secondary to be a bright white filled button with a smooth scale-up transition */
-  .btn-secondary { background: #fff; color: #000; padding: 20px 40px; border-radius: 9999px; font-size: 11px; letter-spacing: .2em; text-transform: uppercase; font-weight: 500; text-decoration: none; transition: transform .2s; display: inline-flex; align-items: center; gap: 10px; }
-  .btn-secondary:hover { transform: scale(1.05); }
+  .btn-secondary { border: 1px solid rgba(68,71,74,.5); color: #c7c6cb; padding: 20px 40px; border-radius: 9999px; font-size: 11px; letter-spacing: .2em; text-transform: uppercase; font-weight: 500; text-decoration: none; backdrop-filter: blur(12px); transition: background .5s, color .5s, border-color .5s; display: inline-block; }
+  .btn-secondary:hover { background: #fff; color: #000; border-color: transparent; }
   .scroll-arrow { position: absolute; bottom: 48px; left: 50%; transform: translateX(-50%); opacity: .4; animation: bounce 1s infinite; }
   @keyframes bounce { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(-6px)} }
 
@@ -224,25 +192,31 @@
 </head>
 <body>
 
+<!-- Custom Cursor -->
 <div id="cursor"></div>
 <div id="cursor-ring"></div>
+<!-- Scroll Progress -->
 <div id="scroll-progress"></div>
+<!-- Grain -->
 <div class="grain"></div>
 
+<!-- ── LOADER ── -->
 <div id="loader">
   <canvas id="loader-canvas"></canvas>
   <div style="position:relative;z-index:10;display:flex;flex-direction:column;align-items:center">
-    <svg class="animated-logo" style="width:280px;color:#fff;filter:drop-shadow(0 0 20px rgba(255,255,255,.4));margin-bottom:24px" viewBox="0 0 310.71 135.16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+    <svg class="animated-logo" style="width:192px;color:#fff;filter:drop-shadow(0 0 20px rgba(255,255,255,.4));margin-bottom:24px" viewBox="0 0 310.71 135.16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
       <path d="M0,27.14h47.52c27.31-.56,38.35,12.42,38.29,32.49-.06,17.93-10.69,32.18-38.29,32.65H12.09l-.15,30.56-11.94,12.32V27.14ZM47.69,81.61c19.1-.82,25.96-10.24,25.86-21.98-.11-12.65-6.88-22.18-25.86-22.18H12.09v44.16h35.6Z"/>
       <path d="M141.46,0h10.99l-61.42,135.16h-10.56L141.46,0Z"/>
       <polygon points="169.32 0 180.94 0 119.53 135.16 108.97 135.16 169.32 0"/>
       <polygon points="134.92 14.48 130.07 25.26 188.4 135.11 199.1 135.11 134.92 14.48"/>
       <path d="M199.72,81.22c-1.02-61.25,87.89-73.81,107.96-19.33h-12.61c-19.12-40.24-84.92-27.71-83.84,19.32-1.21,51.91,77.39,59.72,87.35,10.14l-286.48.94L0,81.64l310.71-.75v5.39c-5.81,67.51-111.34,63.83-110.99-5.07h-.01Z"/>
     </svg>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.4em;color:#c5c7c9;text-transform:uppercase;opacity:.7">Loading</span>
     <div style="width:200px;height:1px;background:#fff;margin-top:24px;filter:drop-shadow(0 0 8px rgba(255,255,255,.5))"></div>
   </div>
 </div>
 
+<!-- ── MAIN ── -->
 <div id="main">
   <header>
     <nav>
@@ -277,6 +251,7 @@
   </header>
 
   <main>
+    <!-- ── HERO ── -->
     <section class="hero">
       <div class="hero-bg">
         <canvas id="hero-canvas" style="width:100%;height:100%;display:block"></canvas>
@@ -296,14 +271,7 @@
         </div>
         <div class="hero-btns hero-el d3">
           <a class="btn-primary" href="#story" onclick="event.preventDefault();scrollTo('story')">Explore Concepts</a>
-          <a class="btn-secondary" target="_blank" href="https://www.instagram.com/phase_glass/">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: block;">
-              <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-              <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-            </svg>
-            Follow the Process
-          </a>
+          <a class="btn-secondary" target="_blank" href="https://www.instagram.com/phase_glass/">Follow the Process</a>
         </div>
       </div>
       <div class="scroll-arrow">
@@ -311,15 +279,22 @@
       </div>
     </section>
 
+    <!-- ── STORY ── -->
     <section id="story" style="background:#0e0e0e">
       <div class="container">
         <div class="story-grid">
           <div class="order-2 md-order-1 reveal">
             <div class="story-visual">
-              <img src="sand.png" alt="Close up of granular beach sand" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:1;filter:grayscale(100%);z-index:0;" />
-              
-              
-              
+              <svg viewBox="0 0 200 200" width="160" height="160" fill="none" style="position:absolute;opacity:.15">
+                <circle cx="100" cy="100" r="90" stroke="white" stroke-width=".8"/>
+                <circle cx="100" cy="100" r="60" stroke="white" stroke-width=".6"/>
+                <circle cx="100" cy="100" r="30" stroke="white" stroke-width=".8"/>
+                <line x1="10" y1="100" x2="190" y2="100" stroke="white" stroke-width=".4"/>
+                <line x1="100" y1="10" x2="100" y2="190" stroke="white" stroke-width=".4"/>
+                <line x1="36" y1="36" x2="164" y2="164" stroke="white" stroke-width=".3"/>
+                <line x1="164" y1="36" x2="36" y2="164" stroke="white" stroke-width=".3"/>
+              </svg>
+              <span style="position:absolute;bottom:24px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.3em;color:rgba(255,255,255,.3);text-transform:uppercase">Sand → Glass</span>
             </div>
           </div>
           <div class="order-1 md-order-2 reveal rd1">
@@ -342,6 +317,7 @@
       </div>
     </section>
 
+    <!-- ── WORK ── -->
     <section id="work" style="background:#131313">
       <div class="container">
         <div class="work-header reveal">
@@ -389,6 +365,7 @@
       </div>
     </section>
 
+    <!-- ── NOTIFY ── -->
     <section style="background:#0e0e0e">
       <div class="container">
         <div class="notify-section reveal">
@@ -406,6 +383,7 @@
       </div>
     </section>
 
+    <!-- ── PROCESS ── -->
     <section id="process" style="background:#0e0e0e">
       <div class="container">
         <div class="process-card reveal">
@@ -424,9 +402,14 @@
             </div>
             <div class="process-visual">
               <div style="position:relative;display:flex;align-items:center;justify-content:center;transition:transform 3s ease" onmouseenter="this.style.transform='scale(1.05)'" onmouseleave="this.style.transform='scale(1)'">
-                
+                <svg viewBox="0 0 200 200" width="200" height="200" fill="none" style="position:absolute">
+                  <circle cx="100" cy="100" r="90" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+                  <circle cx="100" cy="100" r="65" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+                  <circle cx="100" cy="100" r="40" stroke="rgba(255,255,255,.1)" stroke-width="1"/>
+                  <line x1="10" y1="100" x2="190" y2="100" stroke="rgba(255,255,255,.05)" stroke-width=".5"/>
+                  <line x1="100" y1="10" x2="100" y2="190" stroke="rgba(255,255,255,.05)" stroke-width=".5"/>
                 </svg>
-                <svg viewBox="0 0 310.71 135.16" width="220" fill="rgba(255,255,255,.85)" xmlns="http://www.w3.org/2000/svg" style="position:relative;z-index:10">
+                <svg viewBox="0 0 310.71 135.16" width="120" fill="rgba(255,255,255,.85)" xmlns="http://www.w3.org/2000/svg" style="position:relative;z-index:10">
                   <path d="M0,27.14h47.52c27.31-.56,38.35,12.42,38.29,32.49-.06,17.93-10.69,32.18-38.29,32.65H12.09l-.15,30.56-11.94,12.32V27.14ZM47.69,81.61c19.1-.82,25.96-10.24,25.86-21.98-.11-12.65-6.88-22.18-25.86-22.18H12.09v44.16h35.6Z"/>
                   <path d="M141.46,0h10.99l-61.42,135.16h-10.56L141.46,0Z"/>
                   <polygon points="169.32 0 180.94 0 119.53 135.16 108.97 135.16 169.32 0"/>
@@ -434,7 +417,7 @@
                   <path d="M199.72,81.22c-1.02-61.25,87.89-73.81,107.96-19.33h-12.61c-19.12-40.24-84.92-27.71-83.84,19.32-1.21,51.91,77.39,59.72,87.35,10.14l-286.48.94L0,81.64l310.71-.75v5.39c-5.81,67.51-111.34,63.83-110.99-5.07h-.01Z"/>
                 </svg>
               </div>
-              
+              <span style="position:absolute;bottom:24px;right:24px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.3em;color:rgba(255,255,255,.25);text-transform:uppercase">PAG_CORE_2026</span>
             </div>
           </div>
         </div>
@@ -456,6 +439,7 @@
   </footer>
 </div>
 
+<!-- ── MODAL ── -->
 <div id="modal" style="display:none" class="modal-backdrop" onclick="if(event.target===this)closeModal()">
   <div class="modal-box">
     <button class="modal-close" onclick="closeModal()">
@@ -528,33 +512,10 @@ document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); }
   const gl = canvas.getContext('webgl'); if(!gl) return;
   const vs=`attribute vec2 p;varying vec2 v;void main(){v=p*.5+.5;gl_Position=vec4(p,0,1);}`;
   const fs=`precision highp float;varying vec2 v;uniform float t;uniform vec2 r;
-void main(){
-  vec2 p=v*2.-1.; p.x*=r.x/r.y;
-  float a=-.785; mat2 m=mat2(cos(a),-sin(a),sin(a),cos(a)); vec2 q=m*p;
-  
-  // Added layered sine and cosine functions to produce explicit, fast-flowing organic ripples
-  q.y += sin(q.x * 4.5 + t * 2.2) * 0.14 + cos(q.x * 2.5 - t * 1.5) * 0.07;
-  
-  // Convert lines into coordinates for 3D tubes
-  float crd=q.y*22.; float val=(fract(crd)-.5)*2.;
-  float z=sqrt(max(0.,1.-val*val));
-  
-  // Calculate 3D surface normals and directional light rays
-  vec3 norm=normalize(vec3(0.2,val,z));
-  vec3 lightDir=normalize(vec3(0.3,0.5,0.8));
-  
-  // Add 3D diffuse shading and glossy specular surface highlights
-  float diff=max(0.1,dot(norm,lightDir));
-  float spec=pow(max(0.,dot(reflect(-lightDir,norm),vec3(0.,0.,1.))),18.)*0.8;
-  
-  // Inner core shine, mask containment, and outer drop-shadow spacing gap
-  float lineMask=smoothstep(0.95,0.1,abs(val));
-  float dropShadow=smoothstep(0.5,1.0,abs(val));
-  
-  // Clean monochrome render with dimensional light mapping
-  vec3 finalColor=(vec3(0.55)*diff+vec3(1.0)*spec)*lineMask*(1.0-dropShadow*0.85);
-  gl_FragColor=vec4(finalColor,1.);
-}`;
+void main(){vec2 p=v*2.-1.;p.x*=r.x/r.y;float a=-.785;mat2 m=mat2(cos(a),-sin(a),sin(a),cos(a));vec2 q=m*p;
+q.y+=sin(q.x*2.+t*.4)*.2+sin(q.x-t*.32)*.1;float d=abs(fract(q.y*20.)-.5);
+float l=smoothstep(.08,.015,d);float g=exp(-d*12.)*.7;
+gl_FragColor=vec4(vec3(.8,.85,1.)*l+vec3(.5,.6,.9)*g,1.);}`;
   function sh(type,src){const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);return s;}
   const prog=gl.createProgram();gl.attachShader(prog,sh(gl.VERTEX_SHADER,vs));gl.attachShader(prog,sh(gl.FRAGMENT_SHADER,fs));gl.linkProgram(prog);gl.useProgram(prog);
   const buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
@@ -563,17 +524,12 @@ void main(){
   const s0=performance.now(); let raf;
   function draw(n){gl.viewport(0,0,canvas.width,canvas.height);gl.uniform1f(uT,(n-s0)*.001);gl.uniform2f(uR,canvas.width,canvas.height);gl.drawArrays(gl.TRIANGLE_STRIP,0,4);raf=requestAnimationFrame(draw);}
   draw(performance.now());
-  
-  // Hardware-synced transition trigger for zero stutter
   setTimeout(()=>{
-    requestAnimationFrame(() => {
-        document.getElementById('loader').classList.add('loader-exit');
-        document.getElementById('main').classList.add('main-enter');
-        document.body.classList.add('loaded');
-    });
-    // Kills the canvas exactly when it flies past the camera (synced to the 2s logoZoom animation)
-    setTimeout(()=>{ document.getElementById('loader').style.display='none'; cancelAnimationFrame(raf); }, 2000);
-  }, 2500); // Wait 2.5s before starting the zoom
+    document.getElementById('loader').classList.add('loader-exit');
+    document.getElementById('main').classList.add('main-enter');
+    document.body.classList.add('loaded');
+    setTimeout(()=>{ document.getElementById('loader').style.display='none'; cancelAnimationFrame(raf); },1500);
+  },2500);
 })();
 
 // ── Hero WebGL ──
