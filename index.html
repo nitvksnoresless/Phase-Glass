@@ -22,7 +22,7 @@
   /* ── Grain ── */
   .grain { position: fixed; inset: 0; pointer-events: none; z-index: 9999; opacity: .04; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); filter: contrast(150%); mix-blend-mode: overlay; }
 
-  /* ── Loader ── */
+  /* ── Loader ── *
   /* Changed transform-origin from center center to 35% center to target the left side of the SVG during zoom */
   #loader { position: fixed; inset: 0; background-color: #000; z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: background-color 1s ease 0.6s; transform-origin: 1% center; overflow: hidden; }
   #loader-canvas { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .6; transition: opacity 0.6s ease; }
@@ -36,13 +36,14 @@
       filter: none !important; 
       /* Fixed: Shifted the origin point directly onto the scaling vector so it forces the zoom through the left side */
       transform-origin: 40% center; 
-      animation: logoZoom 2s cubic-bezier(0.7, 0, 0.1, 1) forwards; 
+      animation: logoZoom 3s cubic-bezier(0.7, 0, 0.1, 1) forwards; 
   }
   
   @keyframes logoZoom { 
       0% { transform: scale(1); opacity: 1; } 
-      30% { transform: scale(0.95); opacity: 1; } 
-      100% { transform: scale(150); opacity: 0; visibility: hidden; } 
+      15% { transform: scale(0.92); opacity: 1; } /* Quicker pre-load snap down */
+      50% { transform: scale(180); opacity: 0; }  /* Fast, explosive punch past the camera lens */
+      100% { transform: scale(180); opacity: 0; visibility: hidden; } 
   }
   
   .animated-logo path, .animated-logo polygon { stroke:#fff; stroke-width:1.5px; fill:rgba(255,255,255,0); stroke-dasharray:800; stroke-dashoffset:800; animation: drawLines 2s cubic-bezier(.25,1,.5,1) forwards, fillColors 1.5s cubic-bezier(.25,1,.5,1) 1.2s forwards; }
@@ -329,7 +330,7 @@
             <p class="body-lg">That sand represents the obstacles of our everyday lives. For overworked doctors fighting against frustrating, poorly made tools, their daily gear just pulls them down. My goal is to take that raw, heavy sand and forge it under pressure into clear, functional glass. Hence. Phase Glass.</p>
             <div class="stats-grid">
               <div>
-                <div class="stat-num"><span class="counter" data-target="2400" data-suffix="+">0</span></div>
+                <div class="stat-num"><span class="counter" data-target="4467" data-suffix="+">0</span></div>
                 <div class="stat-lbl">CAD Hours</div>
               </div>
               <div>
@@ -526,35 +527,49 @@ document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); }
   function sync(){ canvas.width=innerWidth; canvas.height=innerHeight; }
   addEventListener('resize', sync); sync();
   const gl = canvas.getContext('webgl'); if(!gl) return;
-  const vs=`attribute vec2 p;varying vec2 v;void main(){v=p*.5+.5;gl_Position=vec4(p,0,1);}`;
-  const fs=`precision highp float;varying vec2 v;uniform float t;uniform vec2 r;
-void main(){
-  vec2 p=v*2.-1.; p.x*=r.x/r.y;
-  float a=-.785; mat2 m=mat2(cos(a),-sin(a),sin(a),cos(a)); vec2 q=m*p;
+  // Swapped in your exact old vertex and fragment shader formulas with absolute precision
+  const vs=`attribute vec2 p; varying vec2 v; void main() { v = p * 0.5 + 0.5; gl_Position = vec4(p, 0.0, 1.0); }`;
+  const fs=`precision highp float; 
+  varying vec2 v; 
+  uniform float t; 
+  uniform vec2 r; 
   
-  // Added layered sine and cosine functions to produce explicit, fast-flowing organic ripples
-  q.y += sin(q.x * 4.5 + t * 2.2) * 0.14 + cos(q.x * 2.5 - t * 1.5) * 0.07;
-  
-  // Convert lines into coordinates for 3D tubes
-  float crd=q.y*22.; float val=(fract(crd)-.5)*2.;
-  float z=sqrt(max(0.,1.-val*val));
-  
-  // Calculate 3D surface normals and directional light rays
-  vec3 norm=normalize(vec3(0.2,val,z));
-  vec3 lightDir=normalize(vec3(0.3,0.5,0.8));
-  
-  // Add 3D diffuse shading and glossy specular surface highlights
-  float diff=max(0.1,dot(norm,lightDir));
-  float spec=pow(max(0.,dot(reflect(-lightDir,norm),vec3(0.,0.,1.))),18.)*0.8;
-  
-  // Inner core shine, mask containment, and outer drop-shadow spacing gap
-  float lineMask=smoothstep(0.95,0.1,abs(val));
-  float dropShadow=smoothstep(0.5,1.0,abs(val));
-  
-  // Clean monochrome render with dimensional light mapping
-  vec3 finalColor=(vec3(0.55)*diff+vec3(1.0)*spec)*lineMask*(1.0-dropShadow*0.85);
-  gl_FragColor=vec4(finalColor,1.);
-}`;
+  void main() {
+      vec2 p_coord = v * 2.0 - 1.0;
+      float aspect = r.x / r.y;
+      p_coord.x *= aspect;
+      
+      // Rotate Grid (-45deg)
+      float a = -0.785;
+      mat2 rot = mat2(cos(a), -sin(a), sin(a), cos(a));
+      vec2 rp = rot * p_coord;
+      
+      // Warp Distortion - smoothed
+      float u_t = t * 0.4;
+      float warp = sin(rp.x * 2.0 + u_t) * 0.2 + sin(rp.x * 1.0 - u_t * 0.8) * 0.1;
+      rp.y += warp;
+      
+      // Lines - spaced further apart to fix glitching
+      float lineCount = 8.0;
+      float d = abs(fract(rp.y * lineCount) - 0.5);
+      
+      // Crisp core with reduced exposure glow
+      float line = smoothstep(0.08, 0.015, d);
+      float glow = exp(-d * 12.0) * 0.7;
+      
+      // Color - bright premium glass aesthetic
+      vec3 baseColor = vec3(0.8, 0.85, 1.0) * line;
+      vec3 glowColor = vec3(0.5, 0.6, 0.9) * glow;
+      vec3 color = baseColor + glowColor;
+      
+      // Expanded Vignette: stretches to screen bounds and fades smoothly at the edges
+      float fadeX = smoothstep(aspect, aspect * 0.6, abs(p_coord.x));
+      float fadeY = smoothstep(1.0, 0.6, abs(p_coord.y));
+      color *= fadeX * fadeY;
+      
+      gl_FragColor = vec4(color, 1.0);
+  }`;
+
   function sh(type,src){const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);return s;}
   const prog=gl.createProgram();gl.attachShader(prog,sh(gl.VERTEX_SHADER,vs));gl.attachShader(prog,sh(gl.FRAGMENT_SHADER,fs));gl.linkProgram(prog);gl.useProgram(prog);
   const buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
@@ -572,8 +587,8 @@ void main(){
         document.body.classList.add('loaded');
     });
     // Kills the canvas exactly when it flies past the camera (synced to the 2s logoZoom animation)
-    setTimeout(()=>{ document.getElementById('loader').style.display='none'; cancelAnimationFrame(raf); }, 2000);
-  }, 2500); // Wait 2.5s before starting the zoom
+    setTimeout(()=>{ document.getElementById('loader').style.display='none'; cancelAnimationFrame(raf); }, 6000);
+  }, 2600); // Wait 2.5s before starting the zoom
 })();
 
 // ── Hero WebGL ──
