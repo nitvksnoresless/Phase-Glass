@@ -242,9 +242,11 @@
     .process-content { padding: 32px 20px; }
     .process-visual { min-height: 280px; }
     
-    /* Format the countdown into a clean 2x2 grid instead of a cramped 4x1 row */
-    .countdown-row { flex-wrap: wrap; gap: 12px; }
-    .countdown-box { min-width: calc(50% - 6px); padding: 16px 12px; }
+    /* Force countdown to fit horizontally in a single row */
+    .countdown-row { flex-wrap: nowrap; gap: 6px; width: 100%; justify-content: center; }
+    .countdown-box { min-width: 0; flex: 1; padding: 12px 4px; }
+    .countdown-num { font-size: 22px; } /* Scale down the big numbers */
+    .countdown-lbl { font-size: 8px; letter-spacing: .1em; } /* Scale down the labels */
     
     /* Make buttons thick and thumb-friendly */
     .hero-btns { width: 100%; }
@@ -319,7 +321,8 @@
       <div class="hero-content">
         <span class="badge hero-el">Upcoming Release</span>
         <h1 class="hero-title hero-el">The Future. <span>Is Forged.</span></h1>
-        <p class="hero-sub hero-el d1">Industrial design explorations in medical tech, work peripherals, and functional accessories. A passion project by a high school designer.</p>
+        <p class="hero-sub hero-el d1">Industrial design explorations in medical tech, work peripherals, and functional accessories. 
+            A passion project by a high school designer.</p>
         <div class="hero-el d2" style="margin-bottom:48px">
           <p class="countdown-label">First Concept Reveal In:</p>
           <div class="countdown-row">
@@ -423,7 +426,7 @@
         <div class="notify-section reveal">
           <span class="mono-label" style="display:block;margin-bottom:24px">02. Stay Informed</span>
           <h2 class="notify-title">Be First to See It.</h2>
-          <p class="notify-sub">When the first concept drops, you'll want to be there. No spam — just the reveal, when it's ready.</p>
+          <p class="notify-sub">When the first concept drops, you'll want to be there. No spam, just the reveal, when it's ready.</p>
           <div id="notify-form-wrap">
             <form class="notify-form" onsubmit="submitNotify(event)">
               <input type="email" id="notify-email" class="notify-input" placeholder="your@email.com"/>
