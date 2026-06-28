@@ -256,6 +256,11 @@
     .modal-box { padding: 32px 20px; margin: 16px; width: calc(100% - 32px); }
     .modal-title { font-size: 20px; }
   }
+.beams-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
 </style>
 </head>
 <body>
@@ -427,12 +432,10 @@
           <span class="mono-label" style="display:block;margin-bottom:24px">02. Stay Informed</span>
           <h2 class="notify-title">Be First to See It.</h2>
           <p class="notify-sub">When the first concept drops, you'll want to be there. No spam, just the reveal, when it's ready.</p>
-          <div id="notify-form-wrap">
-            <form class="notify-form" onsubmit="submitNotify(event)">
-              <input type="email" id="notify-email" class="notify-input" placeholder="your@email.com"/>
-              <button type="submit" class="btn-notify">Notify Me</button>
-            </form>
-            <p class="notify-error" id="notify-error" style="display:none">Please enter a valid email address.</p>
+          <div id="notify-form-wrap" style="text-align: center;">
+            <a href="mailto:knithilanv@gmail.com?subject=Phase%20Glass%20Launch%20Updates" class="btn-notify" style="text-decoration: none; display: inline-block;">
+              Email Me for Updates
+            </a>
           </div>
         </div>
       </div>
@@ -644,7 +647,7 @@ document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); }
       }
   }, { passive: true });
 
-  let effectIndex = Math.floor(Math.random() * 6);
+  let effectIndex = Math.floor(Math.random() * 5);
 
   function loadEffect(index) {
       let fs = '';
@@ -874,19 +877,26 @@ document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); }
           }`;
       }
       else if (index === 4) {
-          fs=`precision highp float;varying vec2 v;uniform float t;uniform vec2 r;uniform vec2 m;
+          // 4: Light Rays (Updated Settings: Extended Length 5, Spread 3, Saturation 0, No Mouse, Noise 0.01)
+          fs=`precision highp float;varying vec2 v;uniform float t;uniform vec2 r;
           
+          float noise(vec2 st) {
+              return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
+          }
+
           float rayStrength(vec2 raySource, vec2 rayRefDirection, vec2 coord, float seedA, float seedB, float speed) {
               vec2 sourceToCoord = coord - raySource;
               vec2 dirNorm = normalize(sourceToCoord);
               float cosAngle = dot(dirNorm, rayRefDirection);
 
-              float spreadFactor = pow(max(cosAngle, 0.0), 1.0 / max(2.0, 0.001));
+              // distortion = 0.0 
+              float spreadFactor = pow(max(cosAngle, 0.0), 1.0 / max(3.0, 0.001)); // lightSpread = 3.0
 
               float distance = length(sourceToCoord);
-              float maxDistance = r.x * 3.0;
+              float maxDistance = r.x * 5.0; // rayLength = 5.0
               float lengthFalloff = clamp((maxDistance - distance) / maxDistance, 0.0, 1.0);
-              float fadeFalloff = clamp((r.x * 1.6 - distance) / (r.x * 1.6), 0.5, 1.0);
+              
+              float fadeFalloff = clamp((r.x * 3.0 - distance) / (r.x * 3.0), 0.5, 1.0); // fadeDistance = 3.0
               
               float baseStrength = clamp(
                   (0.45 + 0.15 * sin(cosAngle * seedA + t * speed)) +
@@ -901,27 +911,36 @@ document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); }
               vec2 fragCoord = v * r;
               vec2 coord = vec2(fragCoord.x, r.y - fragCoord.y);
               
+              // Top-Center Origin Placement
               vec2 rayPos = vec2(r.x * 0.5, r.y * -0.2); 
               vec2 rayDir = vec2(0.0, 1.0);
               
-              vec2 mPos = vec2(m.x, r.y - m.y); 
-              vec2 mouseDirection = normalize(mPos - rayPos);
-              vec2 finalRayDir = normalize(mix(rayDir, mouseDirection, 0.1));
+              // followMouse = false, mouseInfluence = 0
+              vec2 finalRayDir = rayDir;
 
-              vec4 rays1 = vec4(1.0) * rayStrength(rayPos, finalRayDir, coord, 36.2214, 21.11349, 1.5 * 1.2);
-              vec4 rays2 = vec4(1.0) * rayStrength(rayPos, finalRayDir, coord, 22.3991, 18.0234, 1.1 * 1.2);
+              // raysSpeed = 1.5
+              vec4 rays1 = vec4(1.0) * rayStrength(rayPos, finalRayDir, coord, 36.2214, 21.11349, 1.5 * 1.5); 
+              vec4 rays2 = vec4(1.0) * rayStrength(rayPos, finalRayDir, coord, 22.3991, 18.0234, 1.1 * 1.5);
 
               vec4 color = rays1 * 0.5 + rays2 * 0.4;
+
+              // noiseAmount = 0.01 (tiny cinematic grain)
+              float n = noise(coord * 0.01 + t * 0.1);
+              color.rgb *= (0.99 + 0.01 * n);
 
               float brightness = 1.0 - (coord.y / r.y);
               color.r *= 0.1 + brightness * 0.8;
               color.g *= 0.3 + brightness * 0.6;
               color.b *= 0.5 + brightness * 0.5;
 
+              // Saturation = 0.0 (Pure Grayscale)
               float gray = dot(color.rgb, vec3(0.299, 0.587, 0.114));
-              color.rgb = mix(vec3(gray), color.rgb, 1.7);
+              color.rgb = vec3(gray);
+
+              // raysColor = Pure White (#ffffff)
               color.rgb *= vec3(1.0, 1.0, 1.0); 
 
+              // Studio Base blending over custom alpha layers
               vec3 bg = vec3(0.015, 0.015, 0.02);
               vec3 finalColor = bg + color.rgb;
               
@@ -932,152 +951,7 @@ document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); }
               gl_FragColor = vec4(clamp(finalColor, 0.0, 1.0), 1.0);
           }`;
       }
-      else if (index === 5) {
-          fs=`precision highp float; void main(){ gl_FragColor = vec4(0.015, 0.015, 0.02, 1.0); }`;
-
-          setTimeout(() => {
-              const heroBg = document.querySelector('.hero-bg');
-              if (!heroBg || index !== effectIndex) return;
-
-              const wavesContainer = document.createElement('div');
-              wavesContainer.id = 'waves-overlay';
-              wavesContainer.style.cssText = 'position:absolute;inset:0;overflow:hidden;background:transparent;z-index:5;';
-
-              const wavesCanvas = document.createElement('canvas');
-              wavesCanvas.style.cssText = 'display:block;width:100%;height:100%;';
-              wavesContainer.appendChild(wavesCanvas);
-              heroBg.appendChild(wavesContainer);
-
-              const ctx = wavesCanvas.getContext('2d');
-              
-              class Grad {
-                  constructor(x,y,z){this.x=x;this.y=y;this.z=z;}
-                  dot2(x,y){return this.x*x+this.y*y;}
-              }
-              class Noise {
-                  constructor(seed=0){
-                      this.grad3=[new Grad(1,1,0),new Grad(-1,1,0),new Grad(1,-1,0),new Grad(-1,-1,0),new Grad(1,0,1),new Grad(-1,0,1),new Grad(1,0,-1),new Grad(-1,0,-1),new Grad(0,1,1),new Grad(0,-1,1),new Grad(0,1,-1),new Grad(0,-1,-1)];
-                      this.p=[151,160,137,91,90,15,131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,190,6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,35,11,32,57,177,33,88,237,149,56,87,174,20,125,136,171,168,68,175,74,165,71,134,139,48,27,166,77,146,158,231,83,111,229,122,60,211,133,230,220,105,92,41,55,46,245,40,244,102,143,54,65,25,63,161,1,216,80,73,209,76,132,187,208,89,18,169,200,196,135,130,116,188,159,86,164,100,109,198,173,186,3,64,52,217,226,250,124,123,5,202,38,147,118,126,255,82,85,212,207,206,59,227,47,16,58,17,182,189,28,42,223,183,170,213,119,248,152,2,44,154,163,70,221,153,101,155,167,43,172,9,129,22,39,253,19,98,108,110,79,113,224,232,178,185,112,104,218,246,97,228,251,34,242,193,238,210,144,12,191,179,162,241,81,51,145,235,249,14,239,107,49,192,214,31,181,199,106,157,184,84,204,176,115,121,50,45,127,4,150,254,138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180];
-                      this.perm=new Array(512); this.gradP=new Array(512); this.seed(seed);
-                  }
-                  seed(seed) {
-                      if(seed>0 && seed<1) seed*=65536;
-                      seed=Math.floor(seed);
-                      if(seed<256) seed|=seed<<8;
-                      for(let i=0;i<256;i++){
-                          let v=i&1 ? this.p[i]^(seed&255) : this.p[i]^((seed>>8)&255);
-                          this.perm[i]=this.perm[i+256]=v;
-                          this.gradP[i]=this.gradP[i+256]=this.grad3[v%12];
-                      }
-                  }
-                  fade(t){return t*t*t*(t*(t*6-15)+10);}
-                  lerp(a,b,t){return(1-t)*a+t*b;}
-                  perlin2(x,y) {
-                      let X=Math.floor(x), Y=Math.floor(y);
-                      x-=X; y-=Y; X&=255; Y&=255;
-                      const n00=this.gradP[X+this.perm[Y]].dot2(x,y);
-                      const n01=this.gradP[X+this.perm[Y+1]].dot2(x,y-1);
-                      const n10=this.gradP[X+1+this.perm[Y]].dot2(x-1,y);
-                      const n11=this.gradP[X+1+this.perm[Y+1]].dot2(x-1,y-1);
-                      const u=this.fade(x);
-                      return this.lerp(this.lerp(n00,n10,u), this.lerp(n01,n11,u), this.fade(y));
-                  }
-              }
-
-              const noise = new Noise(Math.random());
-              let lines = [];
-              let bounding = wavesContainer.getBoundingClientRect();
-              const wMouse = { x: -10, y: 0, lx: 0, ly: 0, sx: 0, sy: 0, v: 0, vs: 0, a: 0, set: false };
-
-              function setSize() {
-                  bounding = wavesContainer.getBoundingClientRect();
-                  wavesCanvas.width = bounding.width;
-                  wavesCanvas.height = bounding.height;
-              }
-              function setLines() {
-                  lines = [];
-                  const oWidth = bounding.width + 200, oHeight = bounding.height + 30;
-                  const totalLines = Math.ceil(oWidth / 12);
-                  const totalPoints = Math.ceil(oHeight / 36);
-                  const xStart = (bounding.width - 12 * totalLines) / 2;
-                  const yStart = (bounding.height - 36 * totalPoints) / 2;
-                  for (let i = 0; i <= totalLines; i++) {
-                      const pts = [];
-                      for (let j = 0; j <= totalPoints; j++) {
-                          pts.push({ x: xStart + 12 * i, y: yStart + 36 * j, wave: { x: 0, y: 0 }, cursor: { x: 0, y: 0, vx: 0, vy: 0 } });
-                      }
-                      lines.push(pts);
-                  }
-              }
-
-              setSize(); setLines();
-              window.addEventListener('resize', () => { setSize(); setLines(); });
-              window.addEventListener('mousemove', e => {
-                  wMouse.x = e.clientX - bounding.left; wMouse.y = e.clientY - bounding.top;
-                  if(!wMouse.set){ wMouse.sx=wMouse.x; wMouse.sy=wMouse.y; wMouse.lx=wMouse.x; wMouse.ly=wMouse.y; wMouse.set=true; }
-              });
-
-              function moved(point, withCursor = true) {
-                  const x = point.x + point.wave.x + (withCursor ? point.cursor.x : 0);
-                  const y = point.y + point.wave.y + (withCursor ? point.cursor.y : 0);
-                  return { x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 };
-              }
-
-              function tick(t) {
-                  wMouse.sx += (wMouse.x - wMouse.sx) * 0.1;
-                  wMouse.sy += (wMouse.y - wMouse.sy) * 0.1;
-                  const dx = wMouse.x - wMouse.lx, dy = wMouse.y - wMouse.ly;
-                  wMouse.v = Math.hypot(dx, dy);
-                  wMouse.vs += (wMouse.v - wMouse.vs) * 0.1;
-                  wMouse.vs = Math.min(100, wMouse.vs);
-                  wMouse.lx = wMouse.x; wMouse.ly = wMouse.y;
-                  wMouse.a = Math.atan2(dy, dx);
-
-                  lines.forEach(pts => {
-                      pts.forEach(p => {
-                          const move = noise.perlin2((p.x + t * 0.02) * 0.002, (p.y + t * 0.01) * 0.0015) * 12;
-                          p.wave.x = Math.cos(move) * 40;
-                          p.wave.y = Math.sin(move) * 20;
-
-                          const mdx = p.x - wMouse.sx, mdy = p.y - wMouse.sy;
-                          const dist = Math.hypot(mdx, mdy), l = Math.max(175, wMouse.vs);
-                          if (dist < l) {
-                              const s = 1 - dist / l;
-                              const f = Math.cos(dist * 0.001) * s;
-                              p.cursor.vx += Math.cos(wMouse.a) * f * l * wMouse.vs * 0.00065;
-                              p.cursor.vy += Math.sin(wMouse.a) * f * l * wMouse.vs * 0.00065;
-                          }
-                          p.cursor.vx += (0 - p.cursor.x) * 0.01;
-                          p.cursor.vy += (0 - p.cursor.y) * 0.01;
-                          p.cursor.vx *= 0.9; p.cursor.vy *= 0.9;
-                          p.cursor.x += p.cursor.vx * 2; p.cursor.y += p.cursor.vy * 2;
-                          p.cursor.x = Math.min(120, Math.max(-120, p.cursor.x));
-                          p.cursor.y = Math.min(120, Math.max(-120, p.cursor.y));
-                      });
-                  });
-
-                  ctx.clearRect(0, 0, bounding.width, bounding.height);
-                  ctx.beginPath();
-                  ctx.strokeStyle = '#ffffff';
-                  ctx.lineWidth = 1;
-                  lines.forEach(points => {
-                      let p1 = moved(points[0], false);
-                      ctx.moveTo(p1.x, p1.y);
-                      points.forEach((p, idx) => {
-                          const isLast = idx === points.length - 1;
-                          p1 = moved(p, !isLast);
-                          const p2 = moved(points[idx + 1] || points[points.length - 1], !isLast);
-                          ctx.lineTo(p1.x, p1.y);
-                          if (isLast) ctx.moveTo(p2.x, p2.y);
-                      });
-                  });
-                  ctx.stroke();
-
-                  gridRaf = requestAnimationFrame(tick);
-              }
-              gridRaf = requestAnimationFrame(tick);
-          }, 50);
-      }
+      
 
       if (prog) gl.deleteProgram(prog);
       prog = gl.createProgram();
@@ -1109,10 +983,10 @@ document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); }
       if(heroBgWrapper) heroBgWrapper.style.opacity = '0';
       
       setTimeout(() => {
-          effectIndex = (effectIndex + 1) % 6;
+          effectIndex = (effectIndex + 1) % 5;
           loadEffect(effectIndex);
           if(heroBgWrapper) heroBgWrapper.style.opacity = '0.6'; 
-      }, 1200); 
+      }, 1200);
   }, 10000); 
 
   function draw(t){
